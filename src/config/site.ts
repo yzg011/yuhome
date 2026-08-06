@@ -5,53 +5,53 @@
 
 export const siteConfig = {
   /** 站点标题（显示在导航栏和浏览器标题中） */
-  title: "UpXuu",
+  title: "Saimen",
   /** 站点副标题（用 "/" 分隔多句，首页打字动画会轮流展示） */
-  subtitle: "HI I AM UPXUU / UPXUU AND YOU",
+  subtitle: "HI I AM Saimen / Saimen AND YOU",
   /** 站点描述（用于 SEO 和社交分享） */
-  description: "UpXuu's personal blog and portfolio",
+  description: "Saimen's personal blog and portfolio",
   /** 作者名 */
-  author: "UpXuu",
+  author: "Saimen",
   /** 站点 URL（影响 Canonical、Sitemap、OG、RSS 等所有绝对链接） */
-  url: "https://upxuu.com", // Base URL of the site
+  url: "https://Saimen.com", // Base URL of the site
   /** 作者头像 URL（导航栏、关于页、AuthorCard 等处使用） */
-  avatar: "https://upxuu.com/images/me.jpg",
+  avatar: "https://Saimen.com/images/logo.png",
   /** 作者签名/座右铭（显示在 AuthorCard 侧边栏） */
   signature: "逐光而上！",
 
   /** 社交链接（AuthorCard、关于页、页脚等处使用） */
   socials: {
-    github: "https://github.com/ImUpXuu",
+    github: "https://github.com/yzg011",
     /** GitHub 用户名（关于页拉取仓库列表用，大写） */
-    githubUser: "IMUPXUU",
+    githubUser: "IMSaimen",
     bilibili: "https://space.bilibili.com/3546855124240550",
     /** Bilibili mid（关于页拉取视频列表用） */
     bilibiliMid: "3546855124240550",
     /** AuthorCard 上显示的 Bilibili 文字 */
-    bilibiliDisplayName: "UPXUU",
-    email: "upxuu@outlook.com",
-    website: "https://upxuu.com",
+    bilibiliDisplayName: "Saimen",
+    email: "Saimen@outlook.com",
+    website: "https://Saimen.com",
     /** 关于页额外社交链接 */
-    twitter: "https://x.com/IMUPXUU",
-    youtube: "https://youtube.com/@UpXuu",
+    twitter: "https://x.com/IMSaimen",
+    youtube: "https://youtube.com/@Saimen",
     wechat: "@imljxu",
     qq: "3697773416",
     /** QQ群链接（欢迎提示中使用） */
     qqGroup: "https://qun.qq.com/universal-share/share?ac=1&authKey=NZ9BP%2BPT44nu34JWAL4Jdz25Bq7ueQoOfOqA4iYPT1JvQKYktml43kgBTMfqTkNl&busi_data=eyJncm91cENvZGUiOiIxMTAzMjMyNDIyIiwidG9rZW4iOiJTZDh2RmhWbXFTL3ZHbVBXeXhJZndQTVcrOUlhNXRSNlczVG1GNUIzQnlQejFZSThWYStSSEVEWUtDcHdHSTM3IiwidWluIjoiMzY5Nzc3MzQxNiJ9&data=HZcezojmJTU_U4qRqv_3ODAb7vm86b6wP8YEp9Stz5b4EzngKNFllXJneyVO7qr4u-plsM84FyvpZl6kkuyZgg&svctype=4&tempid=h5_group_info",
     /** 订阅链接（欢迎提示中的"订阅"按钮，指向 GitHub Issues 等） */
-    subscribe: "https://github.com/ImUpXuu/xuhome/issues",
+    subscribe: "https://github.com/ImSaimen/xuhome/issues",
   },
 
   /** 评论系统配置 */
   waline: {
     /** Waline 服务端地址 */
-    serverURL: 'https://comment.upxuu.com',
+    serverURL: 'https://yu.y00.cc.cd/',
   },
 
   /** 访问统计 — Umami（可配多个实例，留空数组则不加载） */
   analytics: {
     umami: [
-      { src: "https://stats.upxuu.com/script.js", id: "cd983d6c-e011-489d-903f-4757ce41c14d" },
+      { src: "https://sj.y00.cc.cd/script.js", id: "d1eabf84-bbb0-4e4a-b2f2-10ae63550b0a" },
     ],
     /** 站点统计 API（页脚访问量/在线人数、欢迎提示调用） */
     statsApi: {
@@ -67,7 +67,7 @@ export const siteConfig = {
     /** 随机图服务地址（当文章无封面时 fallback 使用） */
     randomImage: "https://bing.img.run/rand.php",
     /** 站点 favicon 路径（相对站点根目录） */
-    favicon: "/images/me.jpg",
+    favicon: "/images/logo.png",
   },
 
   /** 站点运行起始时间（页脚"已在互联网中航行"计时器用） */
@@ -123,7 +123,7 @@ export const navConfig: {
   /** 外部链接项（桌面端"更多"下拉 + 移动端汉堡菜单底部） */
   external: [
     { name: "开往", href: "https://www.travellings.cn/go.html", external: true },
-    { name: "服务状态", href: "https://up.upxuu.com/status/1", external: true },
+    { name: "起亚", href: "https://up.Saimen.com/status/1", external: true },
     { name: "QQ群", href: siteConfig.socials.qqGroup, external: true },
   ],
 };
@@ -133,7 +133,7 @@ export const navConfig: {
  */
 export const footerConfig = {
   /** 版权文字 */
-  copyrightText: "© 2026 UpXuu. All Rights Reserved. ",
+  copyrightText: "© 2026 Saimen. All Rights Reserved. ",
   /** ICP 备案信息（留空则不显示） */
   icp: {
     text: "萌 ICP 备 20269996 号",
@@ -149,9 +149,9 @@ export const footerConfig = {
   /** 页脚开源仓库文字 */
   repoText: "本站已开源 ",
   /** 页脚开源仓库链接 */
-  repoUrl: "https://github.com/ImUpXuu/xuhome",
+  repoUrl: "https://github.com/ImSaimen/xuhome",
   /** 页脚开源仓库显示名 */
-  repoDisplayName: "IMUPXUU/XUHOME",
+  repoDisplayName: "IMSaimen/XUHOME",
 };
 
 /**
@@ -159,20 +159,20 @@ export const footerConfig = {
  */
 export const seoConfig = {
   /** 默认页面标题（无 title 时使用） */
-  defaultTitle: "UpXuu's blog",
+  defaultTitle: "Saimen's blog",
   /** 标题后缀（拼接到每个页面 title 之后） */
-  titleTemplate: " - UpXuu's blog",
+  titleTemplate: " - Saimen's blog",
   /** 默认页面描述 */
-  defaultDescription: "UpXuu 的个人博客，记录一位独立开发者的生活随笔、编程实践与技术思考。涵盖 Web 开发、Astro 建站、开源项目与日常感悟，用文字连接数字世界的每一份热爱。",
+  defaultDescription: "Saimen 的个人博客，记录一位独立开发者的生活随笔、编程实践与技术思考。涵盖 Web 开发、Astro 建站、开源项目与日常感悟，用文字连接数字世界的每一份热爱。",
   /** 默认 OG 图片 URL */
-  defaultImage: "https://upxuu.com/images/me.jpg",
+  defaultImage: "https://Saimen.com/images/logo.png",
   /** SEO 关键词 */
-  keywords: ["UpXuu", "blog", "开发者", "生活", "学习", "技术分享", "upxuu的碎碎念"],
+  keywords: ["Saimen", "blog", "开发者", "生活", "学习", "技术分享", "Saimen的碎碎念"],
   /** Twitter Card 配置 */
   twitter: {
     card: "summary_large_image",
-    site: "@ImUpXuu",
-    creator: "@ImUpXuu",
+    site: "@ImSaimen",
+    creator: "@ImSaimen",
   },
   /** DNS 预解析域名列表 */
   dnsPrefetch: [
@@ -193,7 +193,7 @@ export const seoConfig = {
  */
 export const bannerConfig = {
   /** Banner 主标题（一般等于站点标题） */
-  title: "UpXuu",
+  title: "Saimen",
   /** 背景网格图案透明度（0-1） */
   gridPatternOpacity: 0.12,
   /** 各页面类型的标签文字 */
@@ -206,7 +206,7 @@ export const bannerConfig = {
   /** 说说页打字动画内容 */
   talkTicker: {
     sequence: [
-      "upxuu的碎碎念~",
+      "Saimen的碎碎念~",
       2500,
       "LIFE AND STUDY",
       2500,
@@ -219,9 +219,9 @@ export const bannerConfig = {
  */
 export const subtitleConfig = {
   sequence: [
-    "HI I AM UPXUU",
+    "HI I AM Saimen",
     2500,
-    "UPXUU AND YOU",
+    "Saimen AND YOU",
     2500,
   ],
 };
@@ -265,15 +265,15 @@ export const contentConfig = {
   },
   /** AI 摘要模型列表（url 为完整请求地址） */
   aiSummaryModels: [
-    { id: 'gpt-oss', name: 'GPT-OSS-120B', url: 'https://blogapi.upxuu.com/summarize', hasThinking: false },
-    { id: 'gemma', name: 'Gemma-4-31b-it (OpenRouter)', url: 'https://blogapi.upxuu.com/summarize2', hasThinking: true },
-    { id: 'deepseek-r1', name: 'DeepSeek-R1', url: 'https://blogapi.upxuu.com/summarize3', hasThinking: true },
+    { id: 'gpt-oss', name: 'GPT-OSS-120B', url: 'https://blogapi.Saimen.com/summarize', hasThinking: false },
+    { id: 'gemma', name: 'Gemma-4-31b-it (OpenRouter)', url: 'https://blogapi.Saimen.com/summarize2', hasThinking: true },
+    { id: 'deepseek-r1', name: 'DeepSeek-R1', url: 'https://blogapi.Saimen.com/summarize3', hasThinking: true },
   ],
   /** AI 对话模型列表（url 为完整请求地址） */
   aiChatModels: [
-    { id: 'gpt-oss', name: 'GPT-OSS-120B', url: 'https://blogapi.upxuu.com/chat', hasThinking: false },
-    { id: 'gemma', name: 'Gemma-4-31b-it (OpenRouter)', url: 'https://blogapi.upxuu.com/chat2', hasThinking: true },
-    { id: 'deepseek-r1', name: 'DeepSeek-R1', url: 'https://blogapi.upxuu.com/chat3', hasThinking: true },
+    { id: 'gpt-oss', name: 'GPT-OSS-120B', url: 'https://blogapi.Saimen.com/chat', hasThinking: false },
+    { id: 'gemma', name: 'Gemma-4-31b-it (OpenRouter)', url: 'https://blogapi.Saimen.com/chat2', hasThinking: true },
+    { id: 'deepseek-r1', name: 'DeepSeek-R1', url: 'https://blogapi.Saimen.com/chat3', hasThinking: true },
   ],
 };
 
@@ -284,7 +284,7 @@ export const aboutConfig = {
   /** 关于页浏览器标题 */
   title: "关于我",
   /** 关于页 SEO 描述 */
-  description: "UpXuu的个人介绍、独立开发者履历与前端技术栈栈架构建。",
+  description: "Saimen的个人介绍、独立开发者履历与前端技术栈栈架构建。",
   /** 角色标签 */
   role: "前端开发者 / 独立创作者",
   /** 简介文字（{author} 会被替换为 siteConfig.author） */
@@ -295,23 +295,23 @@ export const aboutConfig = {
     "Next.js", "Vue", "Vite", "Git", "Figma",
   ],
   /** GitHub 介绍文字 */
-  githubBio: "HI I am UpXuu. A developer, student, simple people from HeBei, China.",
+  githubBio: "HI I am Saimen. A developer, student, simple people from HeBei, China.",
   /** Bilibili 板块标题 */
-  bilibiliTitle: "MY bilibili @UPXUU",
+  bilibiliTitle: "MY bilibili @Saimen",
   /** GitHub 仓库链接（关于页"找到我"区块） */
-  githubLink: "https://github.com/Imupxuu",
+  githubLink: "https://github.com/ImSaimen",
   /** GitHub 显示文字 */
-  githubValue: "@ImUpXuu\nupxuu",
+  githubValue: "@ImSaimen\nSaimen",
   /** 邮箱显示文字 */
-  emailValue: "ME@UPXUU.COM",
+  emailValue: "ME@Saimen.COM",
   /** 邮箱链接 */
-  emailLink: "mailto:ME@UPXUU.COM",
+  emailLink: "mailto:ME@Saimen.COM",
   /** 微信显示文字 */
   wechatValue: "@imljxu",
   /** QQ 显示文字 */
   qqValue: "3697773416",
   /** GitHub Socials 区块的邮箱链接 */
-  socialEmailLink: "mailto:me@upxuu.com",
+  socialEmailLink: "mailto:me@Saimen.com",
 };
 
 /**
@@ -340,9 +340,9 @@ export const i18nConfig = {
   /** 首页 */
   home: {
     /** 首页浏览器标题（传给 Layout 的 title） */
-    title: "UPXUU的博客",
+    title: "Saimen的博客",
     /** 首页 SEO 描述 */
-    description: "UpXuu 的个人博客，分享 Web 开发、Astro 建站与开源项目实践的技术文章，以及一名初中生的日常随笔与生活思考。原创内容覆盖前端开发、Vite 生态、AI 应用与中考纪实，适合开发者与年轻创作者阅读。",
+    description: "Saimen 的个人博客，分享 Web 开发、Astro 建站与开源项目实践的技术文章，以及一名初中生的日常随笔与生活思考。原创内容覆盖前端开发、Vite 生态、AI 应用与中考纪实，适合开发者与年轻创作者阅读。",
     /** 首页文章列表区块标题 */
     sectionTitle: "最新文章",
   },
@@ -353,7 +353,7 @@ export const i18nConfig = {
     /** 说说页区块标题 */
     sectionTitle: "说说",
     /** 说说列表页 SEO 描述 */
-    description: "UpXuu 的说说微动态——生活碎碎念、随手记录与日常分享。",
+    description: "Saimen 的说说微动态——生活碎碎念、随手记录与日常分享。",
   },
   /** 说说详情页 */
   talk: {
@@ -365,27 +365,27 @@ export const i18nConfig = {
     /** 分类页标题后缀（拼在分类名后） */
     titleSuffix: " 分类",
     /** 分类页描述模板（{name} 会被替换为分类名） */
-    descriptionTemplate: "{name} 分类下的全部文章 - UpXuu的个人博客",
+    descriptionTemplate: "{name} 分类下的全部文章 - Saimen的个人博客",
   },
   /** 标签页 */
   tag: {
     /** 标签页标题后缀（拼在标签名后） */
     titleSuffix: " 标签",
     /** 标签页描述模板（{name} 会被替换为标签名） */
-    descriptionTemplate: "标签 {name} 下的全部文章 - UpXuu的个人博客",
+    descriptionTemplate: "标签 {name} 下的全部文章 - Saimen的个人博客",
   },
   /** 友链页面 */
   friends: {
     title: "友情链接",
-    description: "UpXuu的友情链接，汇集各路神仙的有趣博客、个人小站。",
+    description: "Saimen的友情链接，汇集各路神仙的有趣博客、个人小站。",
   },
   /** 隐私政策页面 */
   privacy: {
     title: "隐私政策",
-    description: "UpXuu 博客的隐私政策——我们如何收集、使用和保护你的个人信息。",
+    description: "Saimen 博客的隐私政策——我们如何收集、使用和保护你的个人信息。",
     lastUpdated: "2026 年 6 月 28 日",
     effectiveDate: "2026 年 6 月 28 日",
-    contactEmail: "me@upxuu.com",
+    contactEmail: "me@Saimen.com",
   },
   /** 统计页面 */
   stats: {

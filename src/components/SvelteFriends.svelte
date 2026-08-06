@@ -1,21 +1,42 @@
 <script lang="ts">
   import { onMount } from "svelte";
-  import { friendsConfig, type Friend } from "../config/friends";
   import { siteConfig } from "../config/site";
+
+  type Friend = {
+    name: string;
+    url: string;
+    avatar?: string;
+    description?: string;
+    issue_id?: number;
+  };
+
+  let friendsConfig: Friend[] = [];
+  let loading = true;
+  let fetchError = "";
 
   let searchTerm = "";
   let copied = false;
   let shuffled: Friend[] = [];
 
-  onMount(() => {
-    shuffled = [...friendsConfig].sort(() => Math.random() - 0.5);
+  onMount(async () => {
+    try {
+      const res = await fetch("https://lk.z2m.store/friends.json");
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      friendsConfig = await res.json();
+      shuffled = [...friendsConfig].sort(() => Math.random() - 0.5);
+    } catch (err) {
+      fetchError = String(err);
+      console.error("友链远程JSON加载失败：", err);
+    } finally {
+      loading = false;
+    }
   });
 
-  $: filteredFriends = searchTerm.trim() === "" 
-    ? shuffled 
-    : shuffled.filter(f => 
+  $: filteredFriends = searchTerm.trim() === ""
+    ? shuffled
+    : shuffled.filter(f =>
         f.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        f.description.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        f.description?.toLowerCase().includes(searchTerm.toLowerCase()) ||
         f.url.toLowerCase().includes(searchTerm.toLowerCase())
       );
 
@@ -41,7 +62,7 @@
     "from-teal-400 to-lime-300",
     "from-amber-400 to-orange-400"
   ];
-  
+
   function getGradient(name: string) {
     const sum = name.split("").reduce((acc, char) => acc + char.charCodeAt(0), 0);
     return presets[sum % presets.length];
@@ -66,7 +87,7 @@
          </div>
          <h1 class="text-base font-black text-[#0284c7] text-center tracking-wider mb-1">{siteConfig.author}</h1>
          <div class="h-0 border-b-2 border-dashed border-[#0284c7]/30 my-2 w-4/5 mx-auto"></div>
-         
+
          <div class="text-xs font-bold text-slate-600 text-center mb-3 leading-relaxed">
             {siteConfig.description}
          </div>
@@ -95,9 +116,12 @@
         <div class="relative max-w-full md:max-w-xs w-full shrink-0">
           <input
             type="text"
+            id="friend-search"
+            name="friend-search"
             placeholder="搜索好友、博客名称..."
             bind:value={searchTerm}
-            class="w-full pl-9 pr-4 py-2 text-xs sm:text-sm font-bold bg-[rgba(250,248,245,0.55)] text-slate-700 border-3 border-[#0284c7] rounded-sm focus:outline-none focus:bg-white focus:shadow-[2px_2px_0px_0px_#0284c7] transition-all placeholder-slate-400"
+            disabled={loading || !!fetchError}
+            class="w-full pl-9 pr-4 py-2 text-xs sm:text-sm font-bold bg-[rgba(250,248,245,0.55)] text-slate-700 border-3 border-[#0284c7] rounded-sm focus:outline-none focus:bg-white focus:shadow-[2px_2px_0px_0px_#0284c7] transition-all placeholder-slate-400 disabled:opacity-60"
           />
           <svg xmlns="http://www.w3.org/2000/svg" class="absolute left-3 top-2.5 w-4 h-4 text-slate-400 stroke-[3]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
@@ -105,75 +129,81 @@
         </div>
       </div>
 
-      <!-- Friends Card grid -->
-      <div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4 sm:gap-5">
-        {#each filteredFriends as friend (friend.url)}
-          <a
-            href={friend.url}
-            target="_blank"
-            rel="noopener noreferrer"
-            class="group bg-white border-4 border-[#0284c7] p-3 sm:p-4 shadow-[5px_5px_0px_0px_#0284c7] hover:shadow-[8px_8px_0px_0px_#f59e0b] hover:border-[#f59e0b] hover:-translate-x-1 hover:-translate-y-1 rounded-sm flex items-start gap-3 transition-all duration-300 select-none cursor-pointer"
-            id={`friend-${friend.name.replace(/\s+/g, '-').toLowerCase()}`}
-          >
-            {#if imgErrors.has(friend.name) || !friend.avatar}
-              <div class="w-10 h-10 rounded-full border-3 border-[#0284c7] bg-gradient-to-br {getGradient(friend.name)} flex items-center justify-center text-white font-black text-base shadow-[2px_2px_0px_0px_#0284c7] select-none shrink-0 uppercase" style="width:40px;height:40px">
-                {friend.name.charAt(0)}
-              </div>
-            {:else}
-              <div class="relative shrink-0 select-none" style="width:40px;height:40px">
-                <img
-                  src={friend.avatar}
-                  alt={friend.name}
-                  width="40"
-                  height="40"
-                  loading="lazy"
-                  decoding="async"
-                  referrerpolicy="no-referrer"
-                  on:error={() => handleImgError(friend.name)}
-                  class="rounded-full border-3 border-[#0284c7] object-cover bg-white shadow-[2px_2px_0px_0px_#0284c7]"
-                  style="width:40px;height:40px;object-fit:cover"
-                />
-                <div class="absolute inset-0 rounded-full border border-black/10 pointer-events-none" />
-              </div>
-            {/if}
-
-            <div class="flex-1 min-w-0 flex flex-col justify-between h-full pt-0.5">
-              <div>
-                <h3 class="font-extrabold text-sm sm:text-base text-slate-800 tracking-wide group-hover:text-[#0ea5e9] transition-colors truncate">
-                  {friend.name}
-                </h3>
-                <p class="text-[10px] sm:text-xs text-slate-400 font-bold font-mono tracking-wider truncate mt-0.5 flex items-center gap-1">
-                  <svg xmlns="http://www.w3.org/2000/svg" class="w-3.5 h-3.5 text-[#0ea5e9] stroke-[2.5]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9a9 9 0 01-9-9m9 9c1.657 0 3-4.03 3-9s-1.343-9-3-9m0 18c-1.657 0-3-4.03-3-9s1.343-9 3-9m-9 9a9 9 0 019-9" />
-                  </svg>
-                  <span>{friend.url.replace(/^https?:\/\/(www\.)?/, "")}</span>
-                </p>
-                <p class="text-xs text-slate-500 font-medium line-clamp-2 mt-2 leading-relaxed h-[36px]">
-                  {friend.description || "这位好友很神秘，暂时没有简介~"}
-                </p>
-              </div>
-
-              {#if friend.issue_id}
-                <div class="mt-2.5 inline-flex items-center gap-1 text-[9px] font-bold text-emerald-600 bg-emerald-50/70 border border-emerald-200 px-1.5 py-0.5 rounded-sm w-fit select-none">
-                  GitHub Issue #{friend.issue_id}
+      {#if loading}
+        <div class="py-12 text-center text-[#0284c7] font-black uppercase">⏳ 正在加载友链数据...</div>
+      {:else if fetchError}
+        <div class="py-12 text-center text-red-600 font-black uppercase">❌ 友链加载失败：{fetchError}</div>
+      {:else}
+        <!-- Friends Card grid -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4 sm:gap-5">
+          {#each filteredFriends as friend (friend.url)}
+            <a
+              href={friend.url}
+              target="_blank"
+              rel="noopener noreferrer"
+              class="group bg-white border-4 border-[#0284c7] p-3 sm:p-4 shadow-[5px_5px_0px_0px_#0284c7] hover:shadow-[8px_8px_0px_0px_#f59e0b] hover:border-[#f59e0b] hover:-translate-x-1 hover:-translate-y-1 rounded-sm flex items-start gap-3 transition-all duration-300 select-none cursor-pointer"
+              id={`friend-${friend.name.replace(/\s+/g, '-').toLowerCase()}`}
+            >
+              {#if imgErrors.has(friend.name) || !friend.avatar}
+                <div class="w-10 h-10 rounded-full border-3 border-[#0284c7] bg-gradient-to-br {getGradient(friend.name)} flex items-center justify-center text-white font-black text-base shadow-[2px_2px_0px_0px_#0284c7] select-none shrink-0 uppercase" style="width:40px;height:40px">
+                  {friend.name.charAt(0)}
+                </div>
+              {:else}
+                <div class="relative shrink-0 select-none" style="width:40px;height:40px">
+                  <img
+                    src={friend.avatar}
+                    alt={friend.name}
+                    width="40"
+                    height="40"
+                    loading="lazy"
+                    decoding="async"
+                    referrerpolicy="no-referrer"
+                    on:error={() => handleImgError(friend.name)}
+                    class="rounded-full border-3 border-[#0284c7] object-cover bg-white shadow-[2px_2px_0px_0px_#0284c7]"
+                    style="width:40px;height:40px;object-fit:cover"
+                  />
+                  <div class="absolute inset-0 rounded-full border border-black/10 pointer-events-none" />
                 </div>
               {/if}
-            </div>
-          </a>
-        {/each}
 
-        {#if filteredFriends.length === 0}
-          <div class="col-span-full bg-white border-4 border-[#0284c7] p-10 text-center shadow-[4px_4px_0px_0px_#0284c7]">
-            <p class="font-black text-[#0284c7] uppercase">没有筛选到任何符合条件的好友哦</p>
-            <button
-              on:click={() => searchTerm = ""}
-              class="mt-3 px-4 py-1.5 font-bold border-2 border-[#0284c7] bg-[#ebf3ff] text-[#0284c7] hover:bg-[#0ea5e9] hover:text-white transition-all text-xs rounded-sm shadow-[2px_2px_0px_0px_#0284c7] cursor-pointer"
-            >
-              清除搜索条件
-            </button>
-          </div>
-        {/if}
-      </div>
+              <div class="flex-1 min-w-0 flex flex-col justify-between h-full pt-0.5">
+                <div>
+                  <h3 class="font-extrabold text-sm sm:text-base text-slate-800 tracking-wide group-hover:text-[#0ea5e9] transition-colors truncate">
+                    {friend.name}
+                  </h3>
+                  <p class="text-[10px] sm:text-xs text-slate-400 font-bold font-mono tracking-wider truncate mt-0.5 flex items-center gap-1">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="w-3.5 h-3.5 text-[#0ea5e9] stroke-[2.5]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path stroke-linecap="round" stroke-linejoin="round" d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9a9 9 0 01-9-9m9 9c1.657 0 3-4.03 3-9s-1.343-9-3-9m0 18c-1.657 0-3-4.03-3-9s1.343-9 3-9m-9 9a9 9 0 019-9" />
+                    </svg>
+                    <span>{friend.url.replace(/^https?:\/\/(www\.)?/, "")}</span>
+                  </p>
+                  <p class="text-xs text-slate-500 font-medium line-clamp-2 mt-2 leading-relaxed h-[36px]">
+                    {friend.description || "这位好友很神秘，暂时没有简介~"}
+                  </p>
+                </div>
+
+                {#if friend.issue_id}
+                  <div class="mt-2.5 inline-flex items-center gap-1 text-[9px] font-bold text-emerald-600 bg-emerald-50/70 border border-emerald-200 px-1.5 py-0.5 rounded-sm w-fit select-none">
+                    GitHub Issue #{friend.issue_id}
+                  </div>
+                {/if}
+              </div>
+            </a>
+          {/each}
+
+          {#if filteredFriends.length === 0}
+            <div class="col-span-full bg-white border-4 border-[#0284c7] p-10 text-center shadow-[4px_4px_0px_0px_#0284c7]">
+              <p class="font-black text-[#0284c7] uppercase">没有筛选到任何符合条件的好友哦</p>
+              <button
+                on:click={() => searchTerm = ""}
+                class="mt-3 px-4 py-1.5 font-bold border-2 border-[#0284c7] bg-[#ebf3ff] text-[#0284c7] hover:bg-[#0ea5e9] hover:text-white transition-all text-xs rounded-sm shadow-[2px_2px_0px_0px_#0284c7] cursor-pointer"
+              >
+                清除搜索条件
+              </button>
+            </div>
+          {/if}
+        </div>
+      {/if}
     </div>
 
     <!-- Application segment -->
@@ -207,9 +237,9 @@
               upxuu6@gmail.com
             </a>
           </p>
-          <a 
-            href="https://github.com/ImUpXuu/xuhome/issues/new?template=friend-request.yml" 
-            target="_blank" 
+          <a
+            href="https://github.com/ImUpXuu/xuhome/issues/new?template=friend-request.yml"
+            target="_blank"
             rel="noopener noreferrer"
             class="inline-block px-4 py-2 bg-[#0284c7] text-white font-black text-xs rounded-sm hover:bg-[#0ea5e9] transition-all"
           >
@@ -222,7 +252,7 @@
           <span class="absolute -top-3 right-4 bg-white border-2 border-[#0284c7] px-2 py-0.5 text-[9px] text-[#0284c7] font-bold shadow-[1px_1px_0px_0px_#0284c7] select-none">
             本站信息 INFO
           </span>
-          
+
           <ul class="space-y-1.5 text-xs text-slate-600 list-none leading-loose">
             <li on:click={() => copyText("UpXuu's blog", "站点名称")} class="cursor-pointer hover:bg-slate-100 rounded-sm px-1 -mx-1 transition-colors">
               <strong class="text-slate-800">站点名称：</strong> UpXuu's blog

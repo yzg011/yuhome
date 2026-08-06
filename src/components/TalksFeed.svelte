@@ -2,14 +2,23 @@
   import type { TalkItem } from '../utils/postsFetcher';
   import SvelteLightbox from './SvelteLightbox.svelte';
   import TalkShareModal from './TalkShareModal.svelte';
-  import PageViews from './PageViews.svelte';
-  import { onMount, afterUpdate, tick } from 'svelte';
+  import { onMount, afterUpdate, tick, onDestroy } from 'svelte';
 
-  export let talks: TalkItem[] = [];
-  export let talksPerPage: number = 10;
+  // Memos API 配置
+  const API_BASE = 'https://ss.z2m.store';
+  const IMG_DOMAIN = 'https://ss.z2m.store';
+
+  export let pageSize: number = 10;
+
+  // 数据状态（游标分页）
+  let talks: TalkItem[] = [];
+  let pageToken = '';
+  let hasMore = true;
+  let isLoading = false;
+  let loadStatus = '加载中...';
+  let isFirstLoad = true;
 
   let selectedTag: string | null = null;
-  let visibleCount = talksPerPage;
   let shareTalk: TalkItem | null = null;
   let showShareModal = false;
 
@@ -20,20 +29,138 @@
 
   $: allTags = Array.from(new Set(talks.flatMap(t => t.tags || []))).filter(Boolean);
 
-  $: filteredTalks = talks.filter(t => 
-    selectedTag ? t.tags && t.tags.includes(selectedTag) : true
-  );
-
-  $: displayedTalks = filteredTalks.slice(0, visibleCount);
-  $: hasMore = visibleCount < filteredTalks.length;
+  $: filteredTalks = selectedTag
+    ? talks.filter(t => t.tags && t.tags.includes(selectedTag))
+    : talks;
 
   function handleTagSelect(tag: string | null) {
     selectedTag = selectedTag === tag ? null : tag;
-    visibleCount = talksPerPage;
   }
 
-  function loadMore() {
-    visibleCount = Math.min(visibleCount + talksPerPage, filteredTalks.length);
+  // 时间格式化（与 postsFetcher 格式一致：YYYY-MM-DD HH:MM:SS）
+  function formatTime(s: string): string {
+    if (!s) return '未知时间';
+    const d = new Date(s);
+    if (isNaN(d.getTime())) return '未知时间';
+    const pad = (n: number) => String(n).padStart(2, '0');
+    return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())} ${pad(d.getHours())}:${pad(d.getMinutes())}:${pad(d.getSeconds())}`;
+  }
+
+  // 将 Memos 数据映射为 TalkItem
+  function mapMemoToTalk(memo: any): TalkItem {
+    const rawContent = memo.content || '';
+
+    // 提取 #tag 标签
+    const tags = Array.from(rawContent.matchAll(/(?:^|\s)#([\w\u4e00-\u9fa5-]+)/g)).map(m => m[1]);
+
+    // 将图片附件拼接为 markdown 图片语法，复用组件内 extractImages 逻辑
+    let fullContent = rawContent;
+    if (Array.isArray(memo.attachments) && memo.attachments.length) {
+      const imgMd = memo.attachments
+        .filter((a: any) => a.type && a.type.startsWith('image/'))
+        .map((a: any) => {
+          const url = `${IMG_DOMAIN}/file/attachments/${a.uid}/${a.filename}`;
+          return `![${a.filename || '图片'}](${url})`;
+        })
+        .join('\n');
+      if (imgMd) {
+        fullContent += '\n\n' + imgMd;
+      }
+    }
+
+    const id = memo.uid || (memo.name ? memo.name.split('/').pop() : '') || String(memo.id || '');
+
+    return {
+      id,
+      slug: id,
+      title: '日常动态',
+      date: formatTime(memo.createTime),
+      content: fullContent,
+      tags,
+      location: '',
+      weather: '',
+      mood: '',
+      device: ''
+    };
+  }
+
+  // 拼接接口地址（游标分页 pageSize + pageToken）
+  function buildApiUrl(): string {
+    let url = `${API_BASE}/api/v1/memos?pageSize=${pageSize}&sort=createTime&order=desc`;
+    if (pageToken) {
+      url += `&pageToken=${encodeURIComponent(pageToken)}`;
+    }
+    return url;
+  }
+
+  // 加载数据（区分首次 / 滚动加载）
+  async function loadData(isScrollLoad = false): Promise<void> {
+    if (isLoading || !hasMore) return;
+
+    isLoading = true;
+    loadStatus = '加载中...';
+
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 8000);
+
+    try {
+      const res = await fetch(buildApiUrl(), {
+        headers: { 'Content-Type': 'application/json' },
+        signal: controller.signal
+      });
+      clearTimeout(timeoutId);
+
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+
+      const data = await res.json();
+      const list = Array.isArray(data.memos) ? data.memos : [];
+      const nextToken = data.nextPageToken || '';
+      hasMore = !!nextToken;
+      pageToken = nextToken;
+
+      // 无数据
+      if (list.length === 0) {
+        if (!isScrollLoad && talks.length === 0) {
+          loadStatus = '暂无说说';
+        } else {
+          loadStatus = '没有更多了';
+        }
+        return;
+      }
+
+      // 追加新数据
+      const newTalks = list.map(mapMemoToTalk);
+      talks = [...talks, ...newTalks];
+      loadStatus = hasMore ? '上拉加载更多' : '没有更多了';
+    } catch (e: any) {
+      clearTimeout(timeoutId);
+      if (e.name === 'AbortError') {
+        loadStatus = '请求超时';
+      } else {
+        loadStatus = (talks.length === 0 && !isScrollLoad) ? '网络异常' : '加载失败，稍后重试';
+      }
+    } finally {
+      isLoading = false;
+      isFirstLoad = false;
+
+      // 内容不足以撑满视口时自动继续加载
+      await tick();
+      if (hasMore && !isLoading) {
+        const { scrollHeight, clientHeight } = document.documentElement;
+        if (scrollHeight <= clientHeight + 200) {
+          setTimeout(() => loadData(true), 0);
+        }
+      }
+    }
+  }
+
+  // 滚动监听：触底自动加载（距离底部 150px 提前触发）
+  function handleScroll(): void {
+    if (isLoading || !hasMore) return;
+    const { scrollTop, scrollHeight, clientHeight } = document.documentElement;
+    if (scrollTop + clientHeight >= scrollHeight - 150) {
+      loadData(true);
+    }
   }
 
   // Parse markdown helper
@@ -128,11 +255,20 @@
     });
   }
 
+  let scrollHandler: () => void;
+
   onMount(async () => {
+    // 绑定滚动事件（passive 提升性能）
+    scrollHandler = handleScroll;
+    window.addEventListener('scroll', scrollHandler, { passive: true });
+
+    // 初始加载第一页
+    await loadData(false);
+
     await tick();
     setupTalkFold();
 
-    // Scroll and highlight deep links
+    // 深度链接滚动高亮
     const hash = window.location.hash;
     if (hash) {
       const elementId = hash.substring(1);
@@ -149,6 +285,11 @@
     }
   });
 
+  onDestroy(() => {
+    // 页面销毁移除监听（防内存泄漏）
+    if (scrollHandler) window.removeEventListener('scroll', scrollHandler);
+  });
+
   afterUpdate(async () => {
     await tick();
     setupTalkFold();
@@ -156,43 +297,45 @@
 </script>
 
 <div class="w-full flex flex-col gap-4 sm:gap-6">
-  {#if allTags.length > 0}
-    <div class="flex flex-wrap gap-2">
-      {#each allTags as tag}
-        <button
-          on:click={() => handleTagSelect(tag)}
-          class="text-xs px-2.5 py-1 rounded-sm font-bold transition-all border-2 border-[#0284c7] shadow-[2px_2px_0px_0px_#0284c7] cursor-pointer flex items-center gap-1 {selectedTag === tag ? 'bg-[#f59e0b] text-white' : 'bg-[rgba(250,248,245,0.55)] dark:bg-slate-700 text-slate-700 dark:text-slate-200 hover:bg-[#fde68a] hover:translate-y-[-1px]'}"
-        >
-          <span>#{tag}</span>
-        </button>
-      {/each}
-      {#if selectedTag}
-        <button
-          on:click={() => handleTagSelect(null)}
-          class="text-xs px-2.5 py-1 rounded-sm font-bold transition-all border-2 border-red-400 shadow-[2px_2px_0px_0px_red-400] cursor-pointer bg-red-50 dark:bg-red-900/30 text-red-600 dark:text-red-400 hover:bg-red-100 dark:hover:bg-red-900/50"
-        >
-          清除筛选
-        </button>
-      {/if}
+  {#if isFirstLoad && isLoading}
+    <!-- 首次加载骨架屏 -->
+    <div class="bg-white dark:bg-slate-800 border-4 border-[#0284c7] p-12 shadow-[6px_6px_0px_0px_#0284c7] rounded-sm text-center">
+      <p class="text-[#0284c7] font-black tracking-widest uppercase">加载中...</p>
     </div>
-  {/if}
-    {#if displayedTalks.length === 0}
-      <div class="bg-white dark:bg-slate-800 border-4 border-[#0284c7] p-12 shadow-[6px_6px_0px_0px_#0284c7] rounded-sm text-center">
-        <p class="text-[#0284c7] font-black tracking-widest uppercase">哎呀，没有找到相关的说说</p>
+  {:else if filteredTalks.length === 0}
+    <div class="bg-white dark:bg-slate-800 border-4 border-[#0284c7] p-12 shadow-[6px_6px_0px_0px_#0284c7] rounded-sm text-center">
+      <p class="text-[#0284c7] font-black tracking-widest uppercase">{selectedTag ? '哎呀，没有找到相关的说说' : loadStatus}</p>
+    </div>
+  {:else}
+    {#if allTags.length > 0}
+      <div class="flex flex-wrap gap-2">
+        {#each allTags as tag}
+          <button
+            on:click={() => handleTagSelect(tag)}
+            class="text-xs px-2.5 py-1 rounded-sm font-bold transition-all border-2 border-[#0284c7] shadow-[2px_2px_0px_0px_#0284c7] cursor-pointer flex items-center gap-1 {selectedTag === tag ? 'bg-[#f59e0b] text-white' : 'bg-[rgba(250,248,245,0.55)] dark:bg-slate-700 text-slate-700 dark:text-slate-200 hover:bg-[#fde68a] hover:translate-y-[-1px]'}"
+          >
+            <span>#{tag}</span>
+          </button>
+        {/each}
+        {#if selectedTag}
+          <button
+            on:click={() => handleTagSelect(null)}
+            class="text-xs px-2.5 py-1 rounded-sm font-bold transition-all border-2 border-red-400 shadow-[2px_2px_0px_0px_red-400] cursor-pointer bg-red-50 dark:bg-red-900/30 text-red-600 dark:text-red-400 hover:bg-red-100 dark:hover:bg-red-900/50"
+          >
+            清除筛选
+          </button>
+        {/if}
       </div>
     {/if}
 
-    {#each displayedTalks as talk, i (talk.id)}
+    {#each filteredTalks as talk, i (talk.id)}
       {@const images = extractImages(talk.content)}
       {@const textOnly = getContentWithoutImages(talk.content)}
       
-      <!-- svelte-ignore a11y-click-events-have-key-events -->
-      <!-- svelte-ignore a11y-no-static-element-interactions -->
       <div 
         id={`talk-${talk.id}`}
-        class="bg-white dark:bg-slate-800 border-4 border-[#0284c7] p-5 md:p-6 shadow-[8px_8px_0px_0px_#0284c7] hover:shadow-[10px_10px_0px_0px_#f59e0b] hover:-translate-y-1 transition-all rounded-sm relative group cursor-pointer animate-card-entrance opacity-0"
+        class="bg-white dark:bg-slate-800 border-4 border-[#0284c7] p-5 md:p-6 shadow-[8px_8px_0px_0px_#0284c7] hover:shadow-[10px_10px_0px_0px_#f59e0b] hover:-translate-y-1 transition-all rounded-sm relative group animate-card-entrance opacity-0"
         style="animation-delay: {0.2 + (i % 12) * 0.05}s"
-        on:click={() => window.location.href = `/talk/${talk.slug}`}
       >
         <!-- Share Button -->
         <button
@@ -220,7 +363,6 @@
              </div>
              <div class="flex items-center gap-2 mt-1 leading-none">
                 <span class="text-[10px] sm:text-xs text-slate-500 font-mono font-bold">{talk.date}</span>
-                <PageViews path={`/talk/${talk.slug}`} />
              </div>
           </div>
         </div>
@@ -275,17 +417,12 @@
       </div>
     {/each}
 
-    {#if hasMore}
-      <div class="flex justify-center mt-8 pb-12">
-        <button
-          on:click={loadMore}
-          class="px-6 py-2.5 bg-white dark:bg-slate-700 border-3 border-[#0284c7] rounded-sm font-black text-sm text-[#0284c7] uppercase tracking-wider hover:bg-[#0ea5e9] hover:text-white transition-colors cursor-pointer shadow-[4px_4px_0px_0px_#0284c7] active:translate-y-1 active:shadow-none"
-        >
-          加载更多
-        </button>
-      </div>
-    {/if}
-  </div>
+    <!-- 底部加载提示 -->
+    <div class="text-center py-6 text-slate-500 dark:text-slate-400 text-sm font-bold">
+      {loadStatus}
+    </div>
+  {/if}
+</div>
 
 {#if isLightboxOpen}
   <SvelteLightbox images={lightboxImages} initialIndex={lightboxInitialIndex} onClose={() => isLightboxOpen = false} />
@@ -297,7 +434,7 @@
   <TalkShareModal
     talkTitle={shareTalk.title || '日常动态'}
     talkContent={textOnly}
-    talkUrl={`${window.location.origin}/talk/${shareTalk.slug}`}
+    talkUrl={`${window.location.origin}/talks#talk-${shareTalk.slug}`}
     talkImage={images[0]?.src || ''}
     bind:show={showShareModal}
     on:close={closeShare}

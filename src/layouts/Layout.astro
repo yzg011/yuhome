@@ -536,21 +536,6 @@ const canonicalURL = new URL(Astro.url.pathname, siteConfig.url).href;
       doneRes = 0;
       setProgressUI(0, 0);
     });
-          mo.observe(document.documentElement, { childList: true, subtree: true });
-        } catch (e) {}
-      }
-    }
-    if (document.readyState === 'loading') {
-      document.addEventListener('DOMContentLoaded', boot);
-    } else {
-      boot();
-    }
-    document.addEventListener('astro:page-load', function () {
-      totalRes = 0;
-      doneRes = 0;
-      setProgressUI(0, 0);
-      scan(document);
-    });
   })();
 </script>
 
@@ -568,8 +553,7 @@ const canonicalURL = new URL(Astro.url.pathname, siteConfig.url).href;
 </html>
 
 <script is:inline data-astro-rerun>
-{
-
+  function setupGlobalScrollBar() {
     const indicator = document.getElementById('scroll-bar-indicator');
     if (!indicator || window.__scrollBarSetup) return;
     window.__scrollBarSetup = true;
@@ -676,7 +660,7 @@ const canonicalURL = new URL(Astro.url.pathname, siteConfig.url).href;
         }, 300);
       }, 250);
     }
-  }
+  });
 
   if (!window._layoutListenersInited) {
     document.addEventListener('astro:before-preparation', startNavLoader);
