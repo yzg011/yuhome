@@ -238,7 +238,7 @@
             </a>
           </p>
           <a
-            href="https://github.com/ImUpXuu/xuhome/issues/new?template=friend-request.yml"
+            href="https://github.com/yzg011/Link/issues/new?template=friend-request.yml"
             target="_blank"
             rel="noopener noreferrer"
             class="inline-block px-4 py-2 bg-[#0284c7] text-white font-black text-xs rounded-sm hover:bg-[#0ea5e9] transition-all"
