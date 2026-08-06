@@ -45,7 +45,7 @@ export const siteConfig = {
   /** 评论系统配置 */
   waline: {
     /** Waline 服务端地址 */
-    serverURL: 'https://yu.y00.cc.cd/',
+    serverURL: 'https://yu.y00.cc.cd',
   },
 
   /** 访问统计 — Umami（可配多个实例，留空数组则不加载） */
@@ -65,7 +65,7 @@ export const siteConfig = {
     /** 文章列表缺省封面图（为空时使用随机图） */
     defaultPostCover: "",
     /** 随机图服务地址（当文章无封面时 fallback 使用） */
-    randomImage: "https://bing.img.run/rand.php",
+    randomImage: "https://img.z2m.store/random?type=img&dir=bg&orientation=auto",
     /** 站点 favicon 路径（相对站点根目录） */
     favicon: "/images/logo.png",
   },
@@ -122,8 +122,8 @@ export const navConfig: {
   ],
   /** 外部链接项（桌面端"更多"下拉 + 移动端汉堡菜单底部） */
   external: [
-    { name: "开往", href: "https://www.travellings.cn/go.html", external: true },
-    { name: "起亚", href: "https://up.Saimen.com/status/1", external: true },
+    { name: "个人博客", href: "https://blog.z2m.store", external: true },
+    { name: "vlog博客", href: "https://vlog.z2m.store", external: true },
     { name: "QQ群", href: siteConfig.socials.qqGroup, external: true },
   ],
 };
@@ -149,7 +149,7 @@ export const footerConfig = {
   /** 页脚开源仓库文字 */
   repoText: "本站已开源 ",
   /** 页脚开源仓库链接 */
-  repoUrl: "https://github.com/yzg011/xuhome",
+  repoUrl: "https://github.com/yzg011",
   /** 页脚开源仓库显示名 */
   repoDisplayName: "IMSaimen/XUHOME",
 };
