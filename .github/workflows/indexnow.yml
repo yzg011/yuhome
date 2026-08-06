@@ -42,7 +42,7 @@ jobs:
 
           ssl._create_default_https_context = ssl._create_unverified_context
 
-          SITE = "https://upxuu.com"
+          SITE = "https://tblog.z2m.store"
           KEY = os.environ.get("IDX_KEY", "")
           if not KEY:
               print("KEY not set"); sys.exit(1)

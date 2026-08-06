@@ -9,7 +9,7 @@
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.8-3178C6?logo=typescript)](https://www.typescriptlang.org)
 [![Vercel](https://img.shields.io/badge/Vercel-Deployed-000000?logo=vercel)](https://vercel.com)
 
-**Live Site:** [https://upxuu.com](https://upxuu.com)
+**Live Site:** [https://tblog.z2m.store](https://tblog.z2m.store)
 
 ---
 
@@ -195,11 +195,11 @@ export const siteConfig = {
   subtitle: "HI I AM UPXUU / UPXUU AND YOU",
   description: "UpXuu's personal blog and portfolio",
   author: "UpXuu",
-  url: "https://upxuu.com",  // Affects Canonical, Sitemap, OG
-  avatar: "https://upxuu.com/images/avatar.jpg",
+  url: "https://tblog.z2m.store",  // Affects Canonical, Sitemap, OG
+  avatar: "https://tblog.z2m.store/images/avatar.jpg",
   socials: {
     github: "https://github.com/ImUpXuu",
-    website: "https://upxuu.com"
+    website: "https://tblog.z2m.store"
   },
   waline: {
     serverURL: 'https://comment.upxuu.com'  // Waline server
@@ -261,7 +261,7 @@ Edit `src/config/friends.json`:
 
 ```env
 GEMINI_API_KEY="your_gemini_api_key"
-APP_URL="https://upxuu.com"
+APP_URL="https://tblog.z2m.store"
 ```
 
 The AI backend service defaults to `https://blogapi.upxuu.com`. Modify `API_BASE` in `AiSummary.tsx` and `AiChat.tsx` to use your own.

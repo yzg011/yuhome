@@ -50,7 +50,7 @@
   }
 
   function copyTemplate() {
-    const text = `=== 友链申请信息 ===\n名称: UpXuu's blog\n链接: https://upxuu.com\n头像: https://upxuu.com/images/me.jpg\n介绍: 逐光而上\n====================`;
+    const text = `=== 友链申请信息 ===\n名称: UpXuu's blog\n链接: https://tblog.z2m.store\n头像: https://tblog.z2m.store/images/logo.png\n介绍: 逐光而上\n====================`;
     copyText(text, "全部");
   }
 
@@ -257,11 +257,11 @@
             <li on:click={() => copyText("UpXuu's blog", "站点名称")} class="cursor-pointer hover:bg-slate-100 rounded-sm px-1 -mx-1 transition-colors">
               <strong class="text-slate-800">站点名称：</strong> UpXuu's blog
             </li>
-            <li on:click={() => copyText("https://upxuu.com", "站点域名")} class="cursor-pointer hover:bg-slate-100 rounded-sm px-1 -mx-1 transition-colors">
-              <strong class="text-slate-800">站点域名：</strong> https://upxuu.com
+            <li on:click={() => copyText("https://tblog.z2m.store", "站点域名")} class="cursor-pointer hover:bg-slate-100 rounded-sm px-1 -mx-1 transition-colors">
+              <strong class="text-slate-800">站点域名：</strong> https://tblog.z2m.store
             </li>
-            <li on:click={() => copyText("https://upxuu.com/images/me.jpg", "站点头像")} class="cursor-pointer hover:bg-slate-100 rounded-sm px-1 -mx-1 transition-colors">
-              <strong class="text-slate-800">站点头像：</strong> https://upxuu.com/images/me.jpg
+            <li on:click={() => copyText("https://tblog.z2m.store/images/logo.png", "站点头像")} class="cursor-pointer hover:bg-slate-100 rounded-sm px-1 -mx-1 transition-colors">
+              <strong class="text-slate-800">站点头像：</strong> https://tblog.z2m.store/images/logo.png
             </li>
             <li on:click={() => copyText("逐光而上", "站点简介")} class="cursor-pointer hover:bg-slate-100 rounded-sm px-1 -mx-1 transition-colors">
               <strong class="text-slate-800">站点简介：</strong> 逐光而上

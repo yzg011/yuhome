@@ -10,7 +10,7 @@
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.8-3178C6?logo=typescript)](https://www.typescriptlang.org)
 [![Vercel](https://img.shields.io/badge/Vercel-Deployed-000000?logo=vercel)](https://vercel.com)
 
-**在线地址 / Live Site:** [https://upxuu.com](https://upxuu.com)
+**在线地址 / Live Site:** [https://tblog.z2m.store](https://tblog.z2m.store)
 
 ---
 
@@ -204,8 +204,8 @@ export const siteConfig = {
   subtitle: "HI I AM UPXUU / UPXUU AND YOU", // 副标题（用 / 分隔多句，首页打字动画轮流展示）
   description: "UpXuu's personal blog and portfolio",
   author: "UpXuu",
-  url: "https://upxuu.com",                // 影响 Canonical / Sitemap / OG / RSS
-  avatar: "https://upxuu.com/images/me.jpg",
+  url: "https://tblog.z2m.store",                // 影响 Canonical / Sitemap / OG / RSS
+  avatar: "https://tblog.z2m.store/images/logo.png",
   signature: "逐光而上！",                  // AuthorCard 签名
   socials: {
     github: "https://github.com/ImUpXuu",
@@ -232,7 +232,7 @@ export const siteConfig = {
   assets: {
     defaultPostCover: "",
     randomImage: "https://bing.img.run/rand.php",
-    favicon: "/images/me.jpg",
+    favicon: "/images/logo.png",
   },
   startTime: new Date(2025, 8, 30, 20, 20, 0), // 页脚运行计时器起点
   trustedDomains: ['github.com', 'bilibili.com', ...], // 外链免确认白名单
@@ -295,7 +295,7 @@ export const seoConfig = {
   defaultTitle: "UpXuu's blog",
   titleTemplate: " - UpXuu",
   defaultDescription: "UpXuu的个人博客 - 记录生活、学习、编程与思考。",
-  defaultImage: "https://upxuu.com/images/me.jpg",
+  defaultImage: "https://tblog.z2m.store/images/logo.png",
   keywords: ["UpXuu", "blog", "开发者", ...],
   twitter: { card: "summary_large_image", site: "@ImUpXuu", creator: "@ImUpXuu" },
   dnsPrefetch: [...],

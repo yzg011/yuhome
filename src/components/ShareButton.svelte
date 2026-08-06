@@ -1,4 +1,4 @@
-﻿<script lang="ts">
+<script lang="ts">
   import { onMount } from 'svelte';
 
   export let title: string = '';
@@ -228,7 +228,7 @@
       ctx.closePath();
       ctx.clip();
       try {
-        const avImg = await loadImage('https://upxuu.com/images/me.jpg');
+        const avImg = await loadImage('https://tblog.z2m.store/images/logo.png');
         ctx.drawImage(avImg, avX, avY, av, av);
       } catch {
         ctx.fillStyle = '#0284c7';

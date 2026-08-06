@@ -1,5 +1,5 @@
 export async function GET(context: any) {
-  const siteUrl = context.site ? context.site.toString() : 'https://upxuu.com';
+  const siteUrl = context.site ? context.site.toString() : 'https://tblog.z2m.store';
   const domain = siteUrl.replace(/\/$/, '');
 
   const sitemapIndex = `<?xml version="1.0" encoding="UTF-8"?>

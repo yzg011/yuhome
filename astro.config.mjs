@@ -18,7 +18,7 @@ export default defineConfig({
     inlineStylesheets: 'never',
   },
   integrations: [react(), svelte(), mdx()],
-  site: 'https://upxuu.com',
+  site: 'https://tblog.z2m.store',
   redirects: {
     '/talk': {
       destination: '/talks',
