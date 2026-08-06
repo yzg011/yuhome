@@ -30,7 +30,7 @@ export const siteConfig = {
     /** AuthorCard 上显示的 Bilibili 文字 */
     bilibiliDisplayName: "Saimen",
     email: "Saimen@outlook.com",
-    website: "https://Saimen.com",
+    website: "https://tblog.z2m.store",
     /** 关于页额外社交链接 */
     twitter: "https://x.com/IMSaimen",
     youtube: "https://youtube.com/@Saimen",
@@ -149,7 +149,7 @@ export const footerConfig = {
   /** 页脚开源仓库文字 */
   repoText: "本站已开源 ",
   /** 页脚开源仓库链接 */
-  repoUrl: "https://github.com/ImSaimen/xuhome",
+  repoUrl: "https://github.com/yzg011/xuhome",
   /** 页脚开源仓库显示名 */
   repoDisplayName: "IMSaimen/XUHOME",
 };

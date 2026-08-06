@@ -18,7 +18,7 @@ export async function GET(context: any) {
   const rawTalks = await getCollection('talks');
   
   // Normalize domain of the site (remove trailing slash)
-  const siteUrl = context.site ? context.site.toString() : 'https://upxuu.com';
+  const siteUrl = context.site ? context.site.toString() : 'https://tblog.z2m.store';
   const domain = siteUrl.replace(/\/$/, '');
 
   const urls = [
