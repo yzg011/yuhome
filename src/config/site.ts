@@ -13,9 +13,9 @@ export const siteConfig = {
   /** 作者名 */
   author: "Saimen",
   /** 站点 URL（影响 Canonical、Sitemap、OG、RSS 等所有绝对链接） */
-  url: "https://Saimen.com", // Base URL of the site
+  url: "https://tblog.z2m.store", // Base URL of the site
   /** 作者头像 URL（导航栏、关于页、AuthorCard 等处使用） */
-  avatar: "https://Saimen.com/images/logo.png",
+  avatar: "https://tblog.z2m.store/images/logo.png",
   /** 作者签名/座右铭（显示在 AuthorCard 侧边栏） */
   signature: "逐光而上！",
 
@@ -165,7 +165,7 @@ export const seoConfig = {
   /** 默认页面描述 */
   defaultDescription: "Saimen 的个人博客，记录一位独立开发者的生活随笔、编程实践与技术思考。涵盖 Web 开发、Astro 建站、开源项目与日常感悟，用文字连接数字世界的每一份热爱。",
   /** 默认 OG 图片 URL */
-  defaultImage: "https://Saimen.com/images/logo.png",
+  defaultImage: "https://tblog.z2m.store/images/logo.png",
   /** SEO 关键词 */
   keywords: ["Saimen", "blog", "开发者", "生活", "学习", "技术分享", "Saimen的碎碎念"],
   /** Twitter Card 配置 */
@@ -288,7 +288,7 @@ export const aboutConfig = {
   /** 角色标签 */
   role: "前端开发者 / 独立创作者",
   /** 简介文字（{author} 会被替换为 siteConfig.author） */
-  intro: `你好，世界！我是 ${siteConfig.author}-(ljx)。一个在sb河北上学的cs\n目前专注于学习前端 Python（其实是上学罢了） 热爱分享，持续折腾（hardly）。`,
+  intro: `你好，世界！我是 ${siteConfig.author}。cs\n 热爱分享，持续折腾（hardly）。`,
   /** 技能标签列表 */
   skills: [
     "React", "TypeScript", "Node.js", "Astro", "Tailwind CSS",
@@ -299,7 +299,7 @@ export const aboutConfig = {
   /** Bilibili 板块标题 */
   bilibiliTitle: "MY bilibili @Saimen",
   /** GitHub 仓库链接（关于页"找到我"区块） */
-  githubLink: "https://github.com/ImSaimen",
+  githubLink: "https://github.com/yzg011",
   /** GitHub 显示文字 */
   githubValue: "@ImSaimen\nSaimen",
   /** 邮箱显示文字 */
