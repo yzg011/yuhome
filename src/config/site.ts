@@ -109,7 +109,7 @@ export const navConfig: {
     { name: "友链", href: "/friends" },
     { name: "关于", href: "/about" },
     { name: "归档", href: "/posts" },
-    // { name: "统计", href: "/stats" },
+    { name: "统计", href: "/stats" },
     { name: "标签", href: "/tags" },
   ],
   /** 移动端汉堡菜单中的额外项 */
