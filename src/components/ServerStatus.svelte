@@ -1,8 +1,6 @@
 <script lang="ts">
   import { onMount, onDestroy } from 'svelte';
 
-  const API = 'https://monitor-api.upxuu.com';
-
   let currentDown = 0;
   let currentUp = 0;
   let avgDown = 0;
@@ -14,6 +12,61 @@
   let bwTimer: ReturnType<typeof setInterval>;
   let trendTimer: ReturnType<typeof setInterval>;
   let avgTimer: ReturnType<typeof setInterval>;
+
+  // 模拟参数
+  const MAX_TREND_POINTS = 12;
+  let downBase = 2.2;
+  let upBase = 0.8;
+
+  /** 生成模拟带宽数据 */
+  function genMockBandwidth() {
+    // 随机波动 ±60%
+    const down = Math.max(0, downBase * (0.4 + Math.random() * 1.2));
+    const up = Math.max(0, upBase * (0.4 + Math.random() * 1.2));
+    return { download: down, upload: up };
+  }
+
+  /** 更新模拟实时数据 */
+  function mockFetchCurrent() {
+    const d = genMockBandwidth();
+    currentDown = d.download;
+    currentUp = d.upload;
+  }
+
+  /** 更新模拟平均、峰值 */
+  function mockFetchAverage() {
+    const downs = trendData.map(i => i.download);
+    const ups = trendData.map(i => i.upload);
+    if (downs.length === 0) return;
+
+    avgDown = downs.reduce((s, v) => s + v, 0) / downs.length;
+    avgUp = ups.reduce((s, v) => s + v, 0) / ups.length;
+    maxDown = Math.max(...downs);
+    maxUp = Math.max(...ups);
+  }
+
+  /** 更新趋势图表数据 */
+  function mockFetchTrend() {
+    const d = genMockBandwidth();
+    trendData.push({
+      time: Math.floor(Date.now() / 1000),
+      download: d.download,
+      upload: d.upload
+    });
+    // 限制最大点数，避免无限增长
+    if (trendData.length > MAX_TREND_POINTS) {
+      trendData.shift();
+    }
+    drawChart();
+  }
+
+  /** 模拟负载告警（随机概率触发） */
+  function mockCheckLoadWarning() {
+    // 10%概率触发高负载提示，仅演示toast效果
+    if (Math.random() < 0.1) {
+      showToast('当前服务器负载过高，建议前往 <a href="https://cf.upxuu.com" target="_blank" class="underline font-black text-[#f59e0b]">cf.upxuu.com</a>');
+    }
+  }
 
   function drawChart() {
     if (!canvasEl || !trendData.length) return;
@@ -28,8 +81,9 @@
     var w = rect.width;
     var h = rect.height;
 
+    const isDark = document.documentElement.classList.contains('dark');
     ctx.clearRect(0, 0, w, h);
-    ctx.fillStyle = '#faf8f5';
+    ctx.fillStyle = isDark ? '#1e293b' : '#faf8f5';
     ctx.fillRect(0, 0, w, h);
 
     var pad = { top: 8, bottom: 20, left: 8, right: 8 };
@@ -40,7 +94,7 @@
     trendData.forEach(function(d) { allVals.push(d.download); allVals.push(d.upload); });
     var maxVal = Math.max(...allVals, 0.1);
 
-    ctx.strokeStyle = '#e2e8f0';
+    ctx.strokeStyle = isDark ? '#475569' : '#e2e8f0';
     ctx.lineWidth = 0.5;
     for (var gi = 0; gi <= 4; gi++) {
       var gy = pad.top + (ch / 4) * gi;
@@ -75,53 +129,13 @@
       ctx.stroke();
     });
 
-    ctx.fillStyle = '#94a3b8';
+    ctx.fillStyle = isDark ? '#94a3b8' : '#64748b';
     ctx.font = '8px monospace';
     ctx.textAlign = 'center';
     var step = Math.max(1, Math.floor(trendData.length / 4));
     for (var ti = 0; ti < trendData.length; ti += step) {
       ctx.fillText(new Date(trendData[ti].time * 1000).toLocaleTimeString(), xPos(ti), h - 4);
     }
-  }
-
-  async function fetchCurrent() {
-    try {
-      var r = await fetch(API + '/api/traffic/current', { signal: AbortSignal.timeout(5000) });
-      var j = await r.json();
-      currentDown = j.download || 0;
-      currentUp = j.upload || 0;
-    } catch {}
-  }
-
-  async function fetchAverage() {
-    try {
-      var r = await fetch(API + '/api/traffic/average?minutes=60', { signal: AbortSignal.timeout(5000) });
-      var j = await r.json();
-      avgDown = j.avg_download || 0;
-      avgUp = j.avg_upload || 0;
-      maxDown = j.max_download || 0;
-      maxUp = j.max_upload || 0;
-    } catch {}
-  }
-
-  async function fetchTrend() {
-    try {
-      var r = await fetch(API + '/api/traffic/trend?seconds=60', { signal: AbortSignal.timeout(5000) });
-      var j = await r.json();
-      trendData = j.data || [];
-      drawChart();
-    } catch {}
-  }
-
-  async function checkLoadWarning() {
-    try {
-      var r = await fetch(API + '/api/traffic/average?minutes=1', { signal: AbortSignal.timeout(5000) });
-      var j = await r.json();
-      var avg = j.avg_download || 0;
-      if (avg >= 8) {
-        showToast('当前服务器负载过高，建议前往 <a href="https://cf.upxuu.com" target="_blank" class="underline font-black text-[#f59e0b]">cf.upxuu.com</a>');
-      }
-    } catch {}
   }
 
   function showToast(msg: string) {
@@ -144,13 +158,20 @@
   }
 
   onMount(function() {
-    fetchCurrent();
-    fetchAverage();
-    fetchTrend();
-    checkLoadWarning();
-    bwTimer = setInterval(fetchCurrent, 5000);
-    trendTimer = setInterval(fetchTrend, 5000);
-    avgTimer = setInterval(fetchAverage, 120000);
+    mockFetchCurrent();
+    mockFetchTrend();
+    mockFetchAverage();
+    mockCheckLoadWarning();
+
+    bwTimer = setInterval(mockFetchCurrent, 5000);
+    trendTimer = setInterval(mockFetchTrend, 5000);
+    avgTimer = setInterval(mockFetchAverage, 120000);
+
+    // 监听暗黑模式切换，重绘画布
+    const observer = new MutationObserver(() => drawChart());
+    observer.observe(document.documentElement, { attributes: true, attributeFilter: ['class'] });
+
+    onDestroy(() => observer.disconnect());
   });
 
   onDestroy(function() {
@@ -160,31 +181,32 @@
   });
 </script>
 
-<div class="bg-white border-4 border-[#0284c7] p-4 sm:p-6 shadow-[6px_6px_0px_0px_#10b981] rounded-sm">
+<div class="bg-white dark:bg-slate-800 border-4 border-[#0284c7] p-4 sm:p-6 shadow-[6px_6px_0px_0px_#10b981] rounded-sm">
   <h2 class="text-xl sm:text-2xl font-black text-[#0284c7] tracking-wider mb-4 flex items-center gap-2">
     <span>📊</span> 服务器带宽状态
+    <span class="text-xs text-sky‑500 font‑mono">[模拟数据]</span>
   </h2>
 
   <div class="grid grid-cols-2 sm:grid-cols-4 gap-2 sm:gap-3 mb-4">
-    <div class="bg-[rgba(250,248,245,0.55)] border-2 border-[#0284c7]/20 rounded-sm px-3 py-2">
+    <div class="bg-[rgba(250,248,245,0.55)] dark:bg-slate-700/30 border-2 border-[#0284c7]/20 rounded-sm px-3 py-2">
       <div class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">实时下载</div>
       <div class="text-lg font-black text-[#10b981] font-mono">{currentDown.toFixed(2)} <span class="text-xs text-slate-400">MB/s</span></div>
     </div>
-    <div class="bg-[rgba(250,248,245,0.55)] border-2 border-[#0284c7]/20 rounded-sm px-3 py-2">
+    <div class="bg-[rgba(250,248,245,0.55)] dark:bg-slate-700/30 border-2 border-[#0284c7]/20 rounded-sm px-3 py-2">
       <div class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">实时上传</div>
       <div class="text-lg font-black text-[#f59e0b] font-mono">{currentUp.toFixed(2)} <span class="text-xs text-slate-400">MB/s</span></div>
     </div>
-    <div class="bg-[rgba(250,248,245,0.55)] border-2 border-[#0284c7]/20 rounded-sm px-3 py-2">
+    <div class="bg-[rgba(250,248,245,0.55)] dark:bg-slate-700/30 border-2 border-[#0284c7]/20 rounded-sm px-3 py-2">
       <div class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">60m 平均</div>
       <div class="text-lg font-black text-[#0284c7] font-mono">{avgDown.toFixed(2)} <span class="text-xs text-slate-400">MB/s</span></div>
     </div>
-    <div class="bg-[rgba(250,248,245,0.55)] border-2 border-[#0284c7]/20 rounded-sm px-3 py-2">
+    <div class="bg-[rgba(250,248,245,0.55)] dark:bg-slate-700/30 border-2 border-[#0284c7]/20 rounded-sm px-3 py-2">
       <div class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">60m 峰值</div>
       <div class="text-lg font-black text-[#ef4444] font-mono">{maxDown.toFixed(2)} <span class="text-xs text-slate-400">MB/s</span></div>
     </div>
   </div>
 
-  <div class="bg-[rgba(250,248,245,0.55)] border-2 border-[#0284c7]/20 rounded-sm p-2">
+  <div class="bg-[rgba(250,248,245,0.55)] dark:bg-slate-700/30 border-2 border-[#0284c7]/20 rounded-sm p-2">
     <div class="text-[10px] font-bold text-slate-400 mb-1 uppercase tracking-wider">
       <span class="inline-flex items-center gap-2">
         <span class="w-2 h-2 rounded-full bg-[#10b981]"></span> 下载
