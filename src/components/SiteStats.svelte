@@ -3,36 +3,66 @@
 
   export let compact = false;
 
+  const SHARE_BASE = 'https://sj.y00.cc.cd';
+  const SHARE_ID = 'ZxPM4T33qqR9IN7F';
+
   let pageviews = 0;
   let uniques = 0;
   let visits = 0;
   let active = 0;
   let loaded = false;
 
+  function val(v) {
+    if (v == null) return 0;
+    if (typeof v === 'object') return v.value ?? v.y ?? 0;
+    return v;
+  }
+
+  async function fetchWithAuth(path, token) {
+    const res = await fetch(`${SHARE_BASE}${path}`, {
+      headers: {
+        'x-umami-share-token': token,
+        'x-umami-share-context': '1'
+      }
+    });
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    return res.json();
+  }
+
   onMount(async () => {
     try {
-      const [statsRes, activeRes] = await Promise.allSettled([
-        fetch('https://blogapi.476543.xyz/statsapi/alltime', { signal: AbortSignal.timeout(5000) }),
-        fetch('https://blogapi.476543.xyz/api/active', { signal: AbortSignal.timeout(5000) })
+      // Step 1: Get share token & website ID
+      const shareRes = await fetch(`${SHARE_BASE}/api/share/${SHARE_ID}`);
+      const shareData = await shareRes.json();
+      if (!shareData?.token) { loaded = true; return; }
+      const token = shareData.token;
+      const wid = shareData.websiteId;
+      const base = `/api/websites/${wid}`;
+
+      // Step 2: Fetch all-time stats and active users in parallel
+      await Promise.allSettled([
+        (async () => {
+          const dr = await fetchWithAuth(`${base}/daterange`, token);
+          const startAt = dr?.startDate ? new Date(dr.startDate).getTime() : 0;
+          const endAt = dr?.endDate ? new Date(dr.endDate).getTime() : Date.now();
+          const stats = await fetchWithAuth(`${base}/stats?startAt=${startAt}&endAt=${endAt}`, token);
+          if (stats) {
+            pageviews = val(stats.pageviews);
+            uniques = val(stats.visitors);
+            visits = val(stats.visits);
+          }
+        })(),
+        (async () => {
+          try {
+            const data = await fetchWithAuth(`${base}/active`, token);
+            if (Array.isArray(data)) {
+              active = data.length;
+            } else if (data) {
+              active = data.total ?? data.visitors ?? val(data.totals?.visitors) ?? val(data.totals?.pageviews) ?? (data.sessions?.length ?? 0);
+            }
+          } catch {}
+        })()
       ]);
-
-      if (statsRes.status === 'fulfilled') {
-        const data = await statsRes.value.json();
-        if (data) {
-          pageviews = typeof data.pageviews === 'object' ? (data.pageviews?.value ?? 0) : (data.pageviews ?? 0);
-          uniques = typeof data.visitors === 'object' ? (data.visitors?.value ?? 0) : (data.visitors ?? 0);
-          visits = typeof data.visits === 'object' ? (data.visits?.value ?? 0) : (data.visits ?? 0);
-        }
-      }
-
-      if (activeRes.status === 'fulfilled') {
-        const data = await activeRes.value.json();
-        if (Array.isArray(data)) {
-          active = data.length;
-        } else if (data) {
-          active = data.total ?? data.visitors ?? data.totals?.visitors?.value ?? data.totals?.pageviews?.value ?? data.sessions?.length ?? 0;
-        }
-      }
     } catch {}
     loaded = true;
   });

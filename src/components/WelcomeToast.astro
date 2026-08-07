@@ -11,7 +11,8 @@ import { welcomeConfig, siteConfig } from '../config/site';
     fallbackMessage: "Hi！远方的朋友",
     qqGroup: "https://qm.qq.com/q/f5pcXQqVL",
     subscribe: "https://tblog.z2m.store/rss.xml",
-    statsApi: "https://blogapi.476543.xyz/statsapi/alltime"
+    umamiShareBase: "https://sj.y00.cc.cd",
+    umamiShareId: "ZxPM4T33qqR9IN7F"
   };
   var VISIT_SESSION_KEY = CFG.sessionKey;
   var autoCloseTimer = null;
@@ -86,9 +87,27 @@ import { welcomeConfig, siteConfig } from '../config/site';
 
   async function fetchStats() {
     try {
-      var alltimeRes = await fetch(CFG.statsApi);
-      var alltimeData = await alltimeRes.json();
-      var pv = alltimeData ? (typeof alltimeData.pageviews === 'object' ? (alltimeData.pageviews?.value ?? 0) : (alltimeData.pageviews ?? 0)) : 0;
+      // Step 1: Get Umami share token & website ID
+      var shareRes = await fetch(CFG.umamiShareBase + '/api/share/' + CFG.umamiShareId);
+      var shareData = await shareRes.json();
+      if (!shareData || !shareData.token) return;
+      var token = shareData.token;
+      var wid = shareData.websiteId;
+      var authHeaders = {
+        'x-umami-share-token': token,
+        'x-umami-share-context': '1'
+      };
+
+      // Step 2: Get date range for accurate all-time stats
+      var drRes = await fetch(CFG.umamiShareBase + '/api/websites/' + wid + '/daterange', { headers: authHeaders });
+      var dr = await drRes.json();
+      var startAt = dr && dr.startDate ? new Date(dr.startDate).getTime() : 0;
+      var endAt = dr && dr.endDate ? new Date(dr.endDate).getTime() : Date.now();
+
+      // Step 3: Fetch all-time pageviews
+      var statsRes = await fetch(CFG.umamiShareBase + '/api/websites/' + wid + '/stats?startAt=' + startAt + '&endAt=' + endAt, { headers: authHeaders });
+      var stats = await statsRes.json();
+      var pv = stats ? (typeof stats.pageviews === 'object' ? (stats.pageviews.value ?? stats.pageviews.y ?? 0) : (stats.pageviews ?? 0)) : 0;
       var text = pv ? '你是第 ' + pv.toLocaleString() + ' 位访客' : '';
       var statsEl = document.getElementById('welcome-stats');
       if (statsEl) statsEl.textContent = text;

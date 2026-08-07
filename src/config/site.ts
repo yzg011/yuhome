@@ -23,7 +23,7 @@ export const siteConfig = {
   socials: {
     github: "https://github.com/yzg011",
     /** GitHub 用户名（关于页拉取仓库列表用，大写） */
-    githubUser: "IMSaimen",
+    githubUser: "yzg011",
     bilibili: "https://space.bilibili.com/3546855124240550",
     /** Bilibili mid（关于页拉取视频列表用） */
     bilibiliMid: "3546855124240550",
@@ -39,7 +39,7 @@ export const siteConfig = {
     /** QQ群链接（欢迎提示中使用） */
     qqGroup: "https://qun.qq.com/universal-share/share?ac=1&authKey=NZ9BP%2BPT44nu34JWAL4Jdz25Bq7ueQoOfOqA4iYPT1JvQKYktml43kgBTMfqTkNl&busi_data=eyJncm91cENvZGUiOiIxMTAzMjMyNDIyIiwidG9rZW4iOiJTZDh2RmhWbXFTL3ZHbVBXeXhJZndQTVcrOUlhNXRSNlczVG1GNUIzQnlQejFZSThWYStSSEVEWUtDcHdHSTM3IiwidWluIjoiMzY5Nzc3MzQxNiJ9&data=HZcezojmJTU_U4qRqv_3ODAb7vm86b6wP8YEp9Stz5b4EzngKNFllXJneyVO7qr4u-plsM84FyvpZl6kkuyZgg&svctype=4&tempid=h5_group_info",
     /** 订阅链接（欢迎提示中的"订阅"按钮，指向 GitHub Issues 等） */
-    subscribe: "https://github.com/ImSaimen/xuhome/issues",
+    subscribe: "https://github.com/yzg011/xuhome/issues",
   },
 
   /** 评论系统配置 */
@@ -117,7 +117,7 @@ export const navConfig: {
     { name: "友链", href: "/friends" },
     { name: "关于", href: "/about" },
     { name: "归档页面", href: "/posts" },
-    // { name: "网站统计", href: "/stats" },
+    { name: "网站统计", href: "/stats" },
     { name: "标签", href: "/tags" },
   ],
   /** 外部链接项（桌面端"更多"下拉 + 移动端汉堡菜单底部） */

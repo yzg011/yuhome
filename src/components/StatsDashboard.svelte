@@ -1,7 +1,13 @@
 <script>
   import { onMount } from 'svelte';
 
-  const WEBSITE_ID = 'cd983d6c-e011-489d-903f-4757ce41c14d';
+  // Umami share API configuration
+  const SHARE_BASE = 'https://sj.y00.cc.cd';
+  const SHARE_ID = 'ZxPM4T33qqR9IN7F';
+
+  // Share token & website ID (obtained from share API)
+  let shareToken = '';
+  let umamiWebsiteId = '';
 
   // Loading states
   let loadingAlltime = true;
@@ -30,8 +36,11 @@
   // Pie hover
   let pieHover = { browser: null, os: null, device: null, country: null };
 
+  // Handle both old format {value: x} and new Umami format {y: x}
   function val(v) {
-    return v != null ? (typeof v === 'object' ? (v.value ?? 0) : v) : 0;
+    if (v == null) return 0;
+    if (typeof v === 'object') return v.value ?? v.y ?? 0;
+    return v;
   }
 
   const COUNTRY_FLAGS = { 'China':'🇨🇳','United States':'🇺🇸','Japan':'🇯🇵','South Korea':'🇰🇷','United Kingdom':'🇬🇧','Germany':'🇩🇪','France':'🇫🇷','Singapore':'🇸🇬','Canada':'🇨🇦','Australia':'🇦🇺','Hong Kong':'🇭🇰','Taiwan':'🇹🇼','Russia':'🇷🇺','Brazil':'🇧🇷','India':'🇮🇳','Netherlands':'🇳🇱','Sweden':'🇸🇪','Switzerland':'🇨🇭','Italy':'🇮🇹','Spain':'🇪🇸','Malaysia':'🇲🇾','Indonesia':'🇮🇩','Thailand':'🇹🇭','Vietnam':'🇻🇳','Philippines':'🇵🇭','New Zealand':'🇳🇿','Ireland':'🇮🇪','Poland':'🇵🇱','Ukraine':'🇺🇦','Czech Republic':'🇨🇿','Norway':'🇳🇴','Denmark':'🇩🇰','Finland':'🇫🇮','Austria':'🇦🇹','Belgium':'🇧🇪','Portugal':'🇵🇹','Greece':'🇬🇷','Israel':'🇮🇱','Turkey':'🇹🇷','Egypt':'🇪🇬','South Africa':'🇿🇦','Nigeria':'🇳🇬','Kenya':'🇰🇪','Argentina':'🇦🇷','Colombia':'🇨🇴','Mexico':'🇲🇽','Chile':'🇨🇱','Peru':'🇵🇪','Unknown':'🌍' };
@@ -47,11 +56,6 @@
     const now = new Date();
     const start = new Date(now.getFullYear(), now.getMonth(), now.getDate());
     return { startAt: Math.floor(start.getTime()), endAt: Math.floor(now.getTime()) };
-  }
-
-  function getTodayStr() {
-    const now = new Date();
-    return `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}-${String(now.getDate()).padStart(2,'0')}`;
   }
 
   function getRangeTimestamps() {
@@ -71,44 +75,115 @@
     fetchMetrics();
   }
 
+  // Initialize share token from Umami share API
+  async function initShare() {
+    try {
+      const res = await fetch(`${SHARE_BASE}/api/share/${SHARE_ID}`);
+      const data = await res.json();
+      if (data?.token) {
+        shareToken = data.token;
+        umamiWebsiteId = data.websiteId;
+      }
+    } catch (e) {
+      console.error('Failed to init Umami share:', e);
+    }
+  }
+
+  // Fetch with Umami share token authentication
+  async function fetchWithAuth(path) {
+    const res = await fetch(`${SHARE_BASE}${path}`, {
+      headers: {
+        'x-umami-share-token': shareToken,
+        'x-umami-share-context': '1'
+      }
+    });
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    return res.json();
+  }
+
   async function fetchMetrics() {
+    if (!shareToken) return;
     loadingMetrics = true;
     const { startAt, endAt } = getRangeTimestamps();
+    const base = `/api/websites/${umamiWebsiteId}`;
     const m = (type) =>
-      fetch(`https://blogapi.476543.xyz/api/metrics?type=${type}&startAt=${startAt}&endAt=${endAt}`)
-        .then(r => r.json()).catch(() => []);
+      fetchWithAuth(`${base}/metrics?type=${type}&startAt=${startAt}&endAt=${endAt}`)
+        .catch(() => []);
     const [br, os, dev, co] = await Promise.all([m('browser'), m('os'), m('device'), m('country')]);
     browsers = br; osList = os; devices = dev; countries = co;
     loadingMetrics = false;
   }
 
   onMount(async () => {
-    // 1. All-time
-    fetch('https://blogapi.476543.xyz/statsapi/alltime')
-      .then(r => r.json()).then(d => {
-        if (d) { total.pageviews = val(d.pageviews); total.visitors = val(d.visitors); total.visits = val(d.visits); }
-      }).catch(() => {}).finally(() => loadingAlltime = false);
+    // 0. Initialize share token first
+    await initShare();
+    if (!shareToken) {
+      loadingAlltime = false; loadingToday = false; loadingHourly = false; loadingMetrics = false;
+      return;
+    }
 
-    // 2. Today
-    const tr = getTodayRange();
-    fetch(`https://blogapi.476543.xyz/api/stats?startAt=${tr.startAt}&endAt=${tr.endAt}`)
-      .then(r => r.json()).then(d => {
-        if (d) { today.pageviews = val(d.pageviews); today.visitors = val(d.visitors); today.visits = val(d.visits); today.bounces = val(d.bounces); today.totalTime = val(d.totalTime); }
-      }).catch(() => {}).finally(() => loadingToday = false);
+    const base = `/api/websites/${umamiWebsiteId}`;
 
-    // 3. Hourly
-    fetch('https://blogapi.476543.xyz/statsapi/last24h?timezone=Asia/Shanghai')
-      .then(r => r.json()).then(d => {
-        if (Array.isArray(d)) {
-          hourlyData = d;
-          const ts = getTodayStr();
-          for (const h of d) {
-            if (h.hour && h.hour.startsWith(ts)) {
-              today.pageviews += val(h.pageviews); today.visits += val(h.visits);
-            }
-          }
+    // 1. All-time stats (use daterange to get accurate start/end)
+    (async () => {
+      try {
+        const dr = await fetchWithAuth(`${base}/daterange`);
+        const startAt = dr?.startDate ? new Date(dr.startDate).getTime() : 0;
+        const endAt = dr?.endDate ? new Date(dr.endDate).getTime() : Date.now();
+        const stats = await fetchWithAuth(`${base}/stats?startAt=${startAt}&endAt=${endAt}`);
+        if (stats) {
+          total.pageviews = val(stats.pageviews);
+          total.visitors = val(stats.visitors);
+          total.visits = val(stats.visits);
         }
-      }).catch(() => {}).finally(() => loadingHourly = false);
+      } catch (e) {
+        console.error('Failed to fetch all-time stats:', e);
+      } finally {
+        loadingAlltime = false;
+      }
+    })();
+
+    // 2. Today stats
+    (async () => {
+      try {
+        const tr = getTodayRange();
+        const stats = await fetchWithAuth(`${base}/stats?startAt=${tr.startAt}&endAt=${tr.endAt}`);
+        if (stats) {
+          today.pageviews = val(stats.pageviews);
+          today.visitors = val(stats.visitors);
+          today.visits = val(stats.visits);
+          today.bounces = val(stats.bounces);
+          today.totalTime = val(stats.totaltime); // Umami uses lowercase 'totaltime'
+        }
+      } catch (e) {
+        console.error('Failed to fetch today stats:', e);
+      } finally {
+        loadingToday = false;
+      }
+    })();
+
+    // 3. Hourly pageviews (last 24h)
+    (async () => {
+      try {
+        const now = Date.now();
+        const start24h = now - 24 * 60 * 60 * 1000;
+        const pvData = await fetchWithAuth(
+          `${base}/pageviews?startAt=${start24h}&endAt=${now}&unit=hour&timezone=Asia/Shanghai`
+        );
+        if (pvData?.pageviews && Array.isArray(pvData.pageviews)) {
+          // Transform Umami format to chart format
+          hourlyData = pvData.pageviews.map((pv, i) => ({
+            hour: pv.x,
+            pageviews: pv.y,
+            visits: pvData.sessions?.[i]?.y || 0
+          }));
+        }
+      } catch (e) {
+        console.error('Failed to fetch hourly data:', e);
+      } finally {
+        loadingHourly = false;
+      }
+    })();
 
     // 4. Metrics (initial load - all time)
     await fetchMetrics();
@@ -137,12 +212,12 @@
 
   function pieSlices(data) {
     if (!Array.isArray(data) || data.length === 0) return [];
-    const total = data.reduce((s, d) => s + val(d.value), 0);
+    const total = data.reduce((s, d) => s + val(d), 0);
     if (total === 0) return [];
     const cx = 60, cy = 60, r = 55;
     let angle = -90;
     return data.map((d, i) => {
-      const pct = val(d.value) / total;
+      const pct = val(d) / total;
       const a = pct * 360;
       const sr = (angle * Math.PI) / 180;
       const er = ((angle + a) * Math.PI) / 180;
@@ -153,7 +228,7 @@
         ? `M${cx-r},${cy}A${r},${r} 0 1,1 ${cx+r},${cy}A${r},${r} 0 1,1 ${cx-r},${cy}`
         : `M${cx},${cy}L${x1},${y1}A${r},${r} 0 ${large},1 ${x2},${y2}Z`;
       angle += a;
-      return { path, pct: Math.round(pct * 100), label: d.x || '未知', value: val(d.value), color: PIE_COLORS[i % PIE_COLORS.length] };
+      return { path, pct: Math.round(pct * 100), label: d.x || '未知', value: val(d), color: PIE_COLORS[i % PIE_COLORS.length] };
     });
   }
 
@@ -357,7 +432,7 @@
 
   <!-- Link -->
   <div class="text-center pb-8 select-none">
-    <a href="https://stats.upxuu.com/share/sFftlqBkgk2z9JM2" target="_blank" rel="noopener noreferrer" class="inline-flex items-center gap-2 px-5 py-3 border-3 border-[#0284c7] text-[#0284c7] bg-white font-black hover:bg-[#0284c7] hover:text-white transition-all rounded-sm shadow-[4px_4px_0px_0px_#0284c7] hover:shadow-none hover:translate-x-0.5 hover:translate-y-0.5 uppercase tracking-wider text-sm">
+    <a href="https://sj.y00.cc.cd/share/ZxPM4T33qqR9IN7F" target="_blank" rel="noopener noreferrer" class="inline-flex items-center gap-2 px-5 py-3 border-3 border-[#0284c7] text-[#0284c7] bg-white font-black hover:bg-[#0284c7] hover:text-white transition-all rounded-sm shadow-[4px_4px_0px_0px_#0284c7] hover:shadow-none hover:translate-x-0.5 hover:translate-y-0.5 uppercase tracking-wider text-sm">
       <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" /></svg>
       Umami
     </a>
