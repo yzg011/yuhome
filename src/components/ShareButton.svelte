@@ -17,17 +17,8 @@
 
   const shareUrl = url || (typeof window !== 'undefined' ? window.location.href : '');
 
-  onMount(async () => {
-    try {
-      var p = new URL(shareUrl).pathname;
-      if (!p.endsWith('/')) p += '/';
-      const res = await fetch('https://beat.345696.xyz/api/stats?p=' + encodeURIComponent(p), { signal: AbortSignal.timeout(5000) });
-      const data = await res.json();
-      if (data) {
-        var v = data[p];
-        pageViews = v !== undefined ? v : 0;
-      }
-    } catch {}
+  onMount(() => {
+    // 已移除 beat.345696.xyz 统计接口请求
   });
 
   function toggle() { expanded = !expanded; }

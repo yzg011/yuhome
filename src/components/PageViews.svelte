@@ -5,17 +5,7 @@
   let views = 0;
   let loading = true;
 
-  onMount(async () => {
-    try {
-      var p = path.startsWith('/') ? path : '/posts/' + path;
-      if (!p.endsWith('/')) p += '/';
-      const res = await fetch('https://beat.345696.xyz/api/stats?p=' + encodeURIComponent(p), { signal: AbortSignal.timeout(5000) });
-      const data = await res.json();
-      if (data) {
-        var v = data[p];
-        views = v !== undefined ? v : 0;
-      }
-    } catch {}
+  onMount(() => {
     loading = false;
   });
 </script>
