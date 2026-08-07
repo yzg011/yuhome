@@ -185,6 +185,45 @@
     return content.replace(/!\[.*?\]\((.*?)\)/g, '').trim();
   }
 
+  // 图片方向检测：竖屏图片用竖屏比例展示，避免裁切
+  let imageOrientations: Record<string, 'portrait' | 'normal'> = {};
+
+  function detectOrientation(node: HTMLImageElement, src: string) {
+    const mark = () => {
+      const w = node.naturalWidth;
+      const h = node.naturalHeight;
+      if (w > 0 && h > 0 && h > w * 1.15) {
+        imageOrientations[src] = 'portrait';
+        imageOrientations = { ...imageOrientations };
+      }
+    };
+
+    if (node.complete && node.naturalWidth > 0) {
+      mark();
+    } else {
+      node.addEventListener('load', mark, { once: true });
+    }
+
+    return {
+      update(nextSrc: string) {
+        src = nextSrc;
+      },
+      destroy() {
+        node.removeEventListener('load', mark);
+      }
+    };
+  }
+
+  function getImgAspect(src: string, count: number): string {
+    const isPortrait = imageOrientations[src] === 'portrait';
+    if (count === 1) {
+      return isPortrait
+        ? 'aspect-[3/4] max-w-[300px]'
+        : 'aspect-video sm:aspect-[4/3] max-h-80';
+    }
+    return isPortrait ? 'aspect-[3/4]' : 'aspect-square';
+  }
+
   function openShare(talk: TalkItem, e: Event) {
     e.stopPropagation();
     shareTalk = talk;
@@ -386,14 +425,14 @@
 
           <!-- Nine-grid Image Gallery -->
           {#if images.length > 0}
-            <div class="mt-4 grid gap-2 {images.length === 1 ? 'grid-cols-1 max-w-sm' : images.length === 2 || images.length === 4 ? 'grid-cols-2 max-w-xs' : 'grid-cols-3 max-w-md'}">
+            <div class="mt-4 grid gap-2 items-start {images.length === 1 ? 'grid-cols-1 max-w-sm' : images.length === 2 || images.length === 4 ? 'grid-cols-2 max-w-xs' : 'grid-cols-3 max-w-md'}">
               {#each images as src, idx}
                 <!-- svelte-ignore a11y-click-events-have-key-events -->
                 <div 
-                  class="w-full overflow-hidden rounded-sm border-2 border-[#0284c7] hover:border-[#f59e0b] shadow-[2px_2px_0px_0px_rgba(2,132,199,0.15)] hover:shadow-[3px_3px_0px_0px_#0284c7] transition-all cursor-pointer bg-slate-50 relative group-hover:scale-[1.015] {images.length === 1 ? 'aspect-video sm:aspect-[4/3] max-h-80' : 'aspect-square'}"
+                  class="w-full overflow-hidden rounded-sm border-2 border-[#0284c7] hover:border-[#f59e0b] shadow-[2px_2px_0px_0px_rgba(2,132,199,0.15)] hover:shadow-[3px_3px_0px_0px_#0284c7] transition-all cursor-pointer bg-slate-50 relative group-hover:scale-[1.015] {getImgAspect(src.src, images.length)}"
                   on:click|stopPropagation={(e) => openLightbox(images.map(i => i.src), idx, e)}
                 >
-                   <img src={src.src} alt={src.alt || `${talk.title || '说说'} 配图 ${idx + 1}`} class="w-full h-full object-cover transition-transform duration-550 hover:scale-[1.06]" loading="lazy" decoding="async" />
+                   <img src={src.src} alt={src.alt || `${talk.title || '说说'} 配图 ${idx + 1}`} class="w-full h-full object-cover transition-transform duration-550 hover:scale-[1.06]" loading="lazy" decoding="async" use:detectOrientation={src.src} />
                 </div>
               {/each}
             </div>

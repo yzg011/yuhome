@@ -55,8 +55,8 @@ export const siteConfig = {
     ],
     /** 站点统计 API（页脚访问量/在线人数、欢迎提示调用） */
     statsApi: {
-      alltime: 'https://blogapi.476543.xyz/statsapi/alltime',
-      active: 'https://blogapi.476543.xyz/api/active',
+      alltime: '',
+      active: '',
     },
   },
 
@@ -71,7 +71,7 @@ export const siteConfig = {
   },
 
   /** 站点运行起始时间（页脚"已在互联网中航行"计时器用） */
-  startTime: new Date(2025, 8, 30, 20, 20, 0),
+  startTime: new Date(2026, 8, 30, 20, 20, 0),
 
   /** 外部链接安全配置 — 可信域名（点击这些域名的外链不弹确认框） */
   trustedDomains: [

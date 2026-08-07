@@ -442,21 +442,8 @@ const canonicalURL = new URL(Astro.url.pathname, siteConfig.url).href;
       }
     }
 
-    // Send page view beacon manually on every navigation
-    // (beat.js loads once in <head>; its pushState hook may not fire
-    //  reliably with Astro View Transitions, so we send directly)
-    function trackPage() {
-      var url = 'https://beat.345696.xyz/api/track?p=' + encodeURIComponent(location.pathname) + location.hash;
-      if (navigator.sendBeacon) {
-        navigator.sendBeacon(url);
-      } else {
-        new Image().src = url;
-      }
-    }
-
     function onPage() {
       applySiteBg();
-      trackPage();
     }
 
     applySiteBg();
@@ -597,83 +584,74 @@ const canonicalURL = new URL(Astro.url.pathname, siteConfig.url).href;
   setupGlobalScrollBar();
   setupBackToTop();
   
-  // Page navigation loader — tracks real resource loading
-  let navLoaderTimer = null;
-  let bottomLoaderTimer = null;
-  const navLoader = document.getElementById('nav-loader');
-  const navLoaderBar = navLoader?.querySelector('div');
-  const bottomLoader = document.getElementById('bottom-loader');
-  const bottomLoaderBar = bottomLoader?.querySelector('div');
+  // Page navigation loader — only init once (data-astro-rerun re-executes this script)
+  if (!window._navLoaderInited) {
+    window._navLoaderInited = true;
+    let navLoaderTimer = null;
+    let bottomLoaderTimer = null;
+    const navLoader = document.getElementById('nav-loader');
+    const navLoaderBar = navLoader?.querySelector('div');
+    const bottomLoader = document.getElementById('bottom-loader');
+    const bottomLoaderBar = bottomLoader?.querySelector('div');
 
-  let loaderActive = false;
-
-  function setProgress(pct) {
-    const clamped = Math.max(0, Math.min(100, pct));
-    if (navLoaderBar) navLoaderBar.style.width = clamped + '%';
-    if (bottomLoaderBar) bottomLoaderBar.style.width = clamped + '%';
-  }
-
-  function startNavLoader() {
-    if (navLoader && navLoaderBar) {
-      clearTimeout(navLoaderTimer);
-      navLoader.classList.remove('hidden');
-      navLoaderBar.style.transition = 'width 0.3s ease-out';
-      navLoaderBar.style.width = '3%';
+    function setProgress(pct) {
+      const clamped = Math.max(0, Math.min(100, pct));
+      if (navLoaderBar) navLoaderBar.style.width = clamped + '%';
+      if (bottomLoaderBar) bottomLoaderBar.style.width = clamped + '%';
     }
 
-    if (bottomLoader && bottomLoaderBar) {
-      clearTimeout(bottomLoaderTimer);
-      bottomLoader.style.transform = 'translateY(0)';
-      bottomLoaderBar.style.width = '3%';
-      bottomLoaderBar.style.transition = 'width 0.3s ease-out';
-    }
-  }
-
-  function completeNavLoader() {
-    loaderActive = false;
-    clearTimeout(window.__loaderFallbackTimer);
-    clearInterval(window.__loaderFallbackInterval);
-
-    if (resourceObserver) {
-      resourceObserver.disconnect();
-      resourceObserver = null;
-    }
-
-    requestAnimationFrame(() => {
-      if (navLoaderBar) { navLoaderBar.style.width = '100%'; navLoaderBar.style.transition = 'width 0.15s ease-out'; }
-      if (bottomLoaderBar) { bottomLoaderBar.style.width = '100%'; bottomLoaderBar.style.transition = 'width 0.15s ease-out'; }
-
-      if (navLoader) {
+    function startNavLoader() {
+      if (navLoader && navLoaderBar) {
         clearTimeout(navLoaderTimer);
-        navLoaderTimer = setTimeout(() => {
-          navLoader.classList.add('hidden');
-          if (navLoaderBar) navLoaderBar.style.width = '0%';
-        }, 300);
+        navLoader.classList.remove('hidden');
+        navLoaderBar.style.transition = 'width 0.3s ease-out';
+        navLoaderBar.style.width = '3%';
       }
 
-      if (bottomLoader) {
+      if (bottomLoader && bottomLoaderBar) {
         clearTimeout(bottomLoaderTimer);
-        bottomLoaderTimer = setTimeout(() => {
-          bottomLoader.style.transform = 'translateY(100%)';
-        setTimeout(() => {
-          bottomLoaderBar.style.width = '0%';
-        }, 300);
-      }, 250);
+        bottomLoader.style.transform = 'translateY(0)';
+        bottomLoaderBar.style.width = '3%';
+        bottomLoaderBar.style.transition = 'width 0.3s ease-out';
+      }
     }
-  });
 
-  if (!window._layoutListenersInited) {
+    function completeNavLoader() {
+      clearTimeout(window.__loaderFallbackTimer);
+      clearInterval(window.__loaderFallbackInterval);
+
+      requestAnimationFrame(() => {
+        if (navLoaderBar) { navLoaderBar.style.width = '100%'; navLoaderBar.style.transition = 'width 0.15s ease-out'; }
+        if (bottomLoaderBar) { bottomLoaderBar.style.width = '100%'; bottomLoaderBar.style.transition = 'width 0.15s ease-out'; }
+
+        if (navLoader) {
+          clearTimeout(navLoaderTimer);
+          navLoaderTimer = setTimeout(() => {
+            navLoader.classList.add('hidden');
+            if (navLoaderBar) navLoaderBar.style.width = '0%';
+          }, 300);
+        }
+
+        if (bottomLoader) {
+          clearTimeout(bottomLoaderTimer);
+          bottomLoaderTimer = setTimeout(() => {
+            bottomLoader.style.transform = 'translateY(100%)';
+            setTimeout(() => {
+              bottomLoaderBar.style.width = '0%';
+            }, 300);
+          }, 250);
+        }
+      });
+    }
+
     document.addEventListener('astro:before-preparation', startNavLoader);
     document.addEventListener('astro:error', completeNavLoader);
     document.addEventListener('astro:page-load', () => {
       completeNavLoader();
       setupGlobalScrollBar();
       setupBackToTop();
-      showPerfMetrics();
     });
-    window._layoutListenersInited = true;
   }
-}
 </script>
 
 
