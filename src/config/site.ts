@@ -174,16 +174,14 @@ export const seoConfig = {
     site: "@ImSaimen",
     creator: "@ImSaimen",
   },
-  /** DNS 预解析域名列表 */
-  dnsPrefetch: [
-    "//f.xxu6.top",
-    "//" + new URL(siteConfig.waline.serverURL).host,
-  ],
-  /** 预连接资源列表 */
-  preconnect: [
-    { url: "https://f.xxu6.top", crossOrigin: "anonymous" },
-    { url: siteConfig.waline.serverURL, crossOrigin: "anonymous" },
-  ],
+    /** DNS 预解析域名列表 */
+    dnsPrefetch: [
+      "//" + new URL(siteConfig.waline.serverURL).host,
+    ],
+    /** 预连接资源列表 */
+    preconnect: [
+      { url: siteConfig.waline.serverURL, crossOrigin: "anonymous" },
+    ],
   /** robots meta 内容 */
   robots: "index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1",
 };
