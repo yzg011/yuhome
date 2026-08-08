@@ -151,7 +151,7 @@ export const footerConfig = {
   /** 页脚开源仓库链接 */
   repoUrl: "https://github.com/yzg011",
   /** 页脚开源仓库显示名 */
-  repoDisplayName: "IMSaimen/XUHOME",
+  repoDisplayName: "yzg011/yuHOME",
 };
 
 /**
