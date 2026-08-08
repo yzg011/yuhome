@@ -17,16 +17,16 @@ export const siteConfig = {
   /** 作者头像 URL（导航栏、关于页、AuthorCard 等处使用） */
   avatar: "https://tblog.z2m.store/images/logo.png",
   /** 作者签名/座右铭（显示在 AuthorCard 侧边栏） */
-  signature: "逐光而上！",
+  signature: "与光同行！",
 
   /** 社交链接（AuthorCard、关于页、页脚等处使用） */
   socials: {
     github: "https://github.com/yzg011",
     /** GitHub 用户名（关于页拉取仓库列表用，大写） */
     githubUser: "yzg011",
-    bilibili: "https://space.bilibili.com/3546855124240550",
+    bilibili: "https://space.bilibili.com/589691048",
     /** Bilibili mid（关于页拉取视频列表用） */
-    bilibiliMid: "3546855124240550",
+    bilibiliMid: "589691048",
     /** AuthorCard 上显示的 Bilibili 文字 */
     bilibiliDisplayName: "Saimen",
     email: "Saimen@outlook.com",
@@ -35,7 +35,7 @@ export const siteConfig = {
     twitter: "https://x.com/IMSaimen",
     youtube: "https://youtube.com/@Saimen",
     wechat: "@imljxu",
-    qq: "3697773416",
+    qq: "357239268",
     /** QQ群链接（欢迎提示中使用） */
     qqGroup: "https://qun.qq.com/universal-share/share?ac=1&authKey=NZ9BP%2BPT44nu34JWAL4Jdz25Bq7ueQoOfOqA4iYPT1JvQKYktml43kgBTMfqTkNl&busi_data=eyJncm91cENvZGUiOiIxMTAzMjMyNDIyIiwidG9rZW4iOiJTZDh2RmhWbXFTL3ZHbVBXeXhJZndQTVcrOUlhNXRSNlczVG1GNUIzQnlQejFZSThWYStSSEVEWUtDcHdHSTM3IiwidWluIjoiMzY5Nzc3MzQxNiJ9&data=HZcezojmJTU_U4qRqv_3ODAb7vm86b6wP8YEp9Stz5b4EzngKNFllXJneyVO7qr4u-plsM84FyvpZl6kkuyZgg&svctype=4&tempid=h5_group_info",
     /** 订阅链接（欢迎提示中的"订阅"按钮，指向 GitHub Issues 等） */
