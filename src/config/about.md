@@ -1,8 +1,8 @@
 ## 👋 Who Am I
 
-嗨，我是 **UpXuu (ljx)**，一个普通的人。
+嗨，我叫Saimen，一个普通的人。
 
-emm why？UPXUU？ 因为如果你认真看这页 你会发现我的wx是imljxu 嗯对我确实是xuu 那up就是凑字数的罢了(
+现在在干安防行业，热爱技术，希望交到更多的朋友
 
 
 
@@ -16,17 +16,20 @@ emm why？UPXUU？ 因为如果你认真看这页 你会发现我的wx是imljxu 
 
 > Keep learning, keep building, keep sharing.
 >
-> 逐光而上！
+> 与光同行！
 
 ## 🛠️ Currently
 
 - 用 Astro + Tailwind CSS 搭建个人站点
 - 研究 AI / 独立开发相关的东西
-- 备战中考（是的，我还在上初中）
+- 处理印度🇮🇳STQC认证
 
 ## 🎯 Goals
 
 - 做更多有意思的开源项目
+
 - 交到更多志同道合的朋友
-- 考上心仪的高中
-- 地生120！！！
+
+- 学到 更多的技术 升职加薪 迎娶白富美。
+
+  
