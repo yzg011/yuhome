@@ -82,20 +82,21 @@ export async function GET(context: APIContext) {
     .replace(/\/+$/, '');
   const author = siteConfig.author;
 
-  // 文章列表处理（路由改为 /blog/，解决 /blog/undefined）
+  // ========== 文章处理：强制优先文件名，匹配 /blog/xxx 路由 ==========
   const postItems = posts.map((post) => {
     const body = typeof post.body === 'string' ? post.body : '';
     const cleaned = stripInvalidXmlChars(body);
-    // 多层兜底，绝对避免 undefined
-    const fallbackSlug = String(post.data.published || post.data.date || Date.now());
-    const rawSlug = post.data.slug || post.slug || post.id || fallbackSlug;
-    const slug = String(rawSlug).trim();
 
-    // 你的文章页面路由是 /blog/
-    const url = `${siteUrl}/blog/${slug}/`;
+    // 从文件id提取纯文件名（核心兜底，永远有值）
+    const fullFileName = post.id.split('/').pop() || '';
+    const fileSlug = fullFileName.replace(/\.md$/i, '');
+    // 优先级：frontmatter slug > Astro内置slug > 文件名称
+    const finalSlug = post.data.slug?.trim() || post.slug?.trim() || fileSlug;
+
+    // 匹配你的站点路由 /blog/xxx
+    const url = `${siteUrl}/blog/${finalSlug}/`;
     const pubDate = beijingRfc2822(post.data.published || post.data.date);
     const summary = post.data.description || stripMarkdown(body).substring(0, 150);
-    // 渲染HTML，保留图片标签
     const htmlContent = sanitizeHtml(parser.render(cleaned), {
       allowedTags: sanitizeHtml.defaults.allowedTags.concat(['img']),
     });
@@ -106,21 +107,16 @@ export async function GET(context: APIContext) {
     };
   });
 
-  // 说说列表处理
+  // ========== 说说处理：同样使用文件名兜底 ==========
   const talkItems = talks.map((talk) => {
     const body = typeof talk.body === 'string' ? talk.body : '';
     const cleaned = stripInvalidXmlChars(body);
-    // 强制兜底，杜绝undefined
-    const fallbackSlug = String(talk.data.date || Date.now());
-    const rawSlug = talk.data.slug || talk.slug || talk.id || fallbackSlug;
-    const slug = String(rawSlug).trim();
 
-    // 请根据你的实际页面文件夹二选一：
-    // 页面文件是 talk/[slug].astro 用下面这行
-    const url = `${siteUrl}/talk/${slug}/`;
-    // 页面文件是 talks/[slug].astro 取消上面，启用这行
-    // const url = `${siteUrl}/talks/${slug}/`;
+    const fullFileName = talk.id.split('/').pop() || '';
+    const fileSlug = fullFileName.replace(/\.md$/i, '');
+    const finalSlug = talk.data.slug?.trim() || talk.slug?.trim() || fileSlug;
 
+    const url = `${siteUrl}/talk/${finalSlug}/`;
     const pubDate = beijingRfc2822(talk.data.date);
     const summary = stripMarkdown(body).substring(0, 200);
     const htmlContent = sanitizeHtml(parser.render(cleaned), {
