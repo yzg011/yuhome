@@ -286,7 +286,7 @@ export const aboutConfig = {
   /** 角色标签 */
   role: "前端开发者 / 独立创作者",
   /** 简介文字（{author} 会被替换为 siteConfig.author） */
-  intro: `你好，世界！我是 ${siteConfig.author}。cs\n 热爱分享，持续折腾（hardly）。`,
+  intro: `你好，世界！我是 ${siteConfig.author}。\n 热爱分享，持续折腾（hardly）。`,
   /** 技能标签列表 */
   skills: [
     "React", "TypeScript", "Node.js", "Astro", "Tailwind CSS",
@@ -301,7 +301,7 @@ export const aboutConfig = {
   /** GitHub 显示文字 */
   githubValue: "yzg011",
   /** 邮箱显示文字 */
-  emailValue: "ME@Saimen.COM",
+  emailValue: "yzg011@qq.com",
   /** 邮箱链接 */
   emailLink: "mailto:ME@Saimen.COM",
   /** 微信显示文字 */

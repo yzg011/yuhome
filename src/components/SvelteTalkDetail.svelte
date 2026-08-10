@@ -1,8 +1,10 @@
 <script lang="ts">
+  import { onMount } from 'svelte';
   import type { TalkItem } from '../utils/postsFetcher';
   import SvelteLightbox from './SvelteLightbox.svelte';
   import TalkShareModal from './TalkShareModal.svelte';
   import PageViews from './PageViews.svelte';
+  import { siteConfig } from '../config/site';
 
   export let talk: TalkItem;
 
@@ -10,7 +12,56 @@
   let lightboxImages: string[] = [];
   let lightboxInitialIndex = 0;
   let showShare = false;
+  let liked = false;
+  let liking = false;
+  let likeCount = 0;
 
+  const WALINE = siteConfig.waline.serverURL;
+
+  function getWalinePath(): string {
+    let p = window.location.pathname.replace(/\/+/g, '/');
+    if (!p.endsWith('/')) p += '/';
+    return p;
+  }
+
+  async function handleLike() {
+    if (liking) return;
+    liking = true;
+    try {
+      const wpath = getWalinePath();
+      const res = await fetch(`${WALINE}/api/reaction`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ url: wpath, reaction: '❤️' }),
+      });
+      if (res.ok) {
+        liked = !liked;
+        const data = await res.json();
+        if (typeof data.data?.reaction === 'number') {
+          likeCount = data.data.reaction;
+        }
+      }
+    } catch {
+      // ignore
+    } finally {
+      liking = false;
+    }
+  }
+
+  onMount(async () => {
+    try {
+      const wpath = getWalinePath();
+      const res = await fetch(`${WALINE}/api/reaction?url=${encodeURIComponent(wpath)}&reaction=${encodeURIComponent('❤️')}`);
+      if (res.ok) {
+        const data = await res.json();
+        if (typeof data.data?.reaction === 'number') {
+          likeCount = data.data.reaction;
+        }
+      }
+    } catch {
+      // ignore
+    }
+  });
   function openShare() {
     showShare = true;
     document.body.style.overflow = 'hidden';
@@ -66,16 +117,16 @@
     <!-- Avatar & Meta Header -->
     <div class="flex gap-4 items-center mb-4 select-none">
       <div class="rounded-sm bg-[#0ea5e9] border-3 border-[#0284c7] shadow-[4px_4px_0px_0px_#0284c7] flex-shrink-0 flex items-center justify-center transform -rotate-3 overflow-hidden w-12 h-12">
-         <img src="https://tblog.z2m.store/images/logo.png" alt="UpXuu" class="w-full h-full object-cover" />
+         <img src="https://tblog.z2m.store/images/logo.png" alt="Saimen" class="w-full h-full object-cover" />
       </div>
       <div>
          <div class="font-black text-[#0284c7] tracking-wide flex items-center gap-2 text-lg">
-            UpXuu
+            Saimen
             {#if talk.mood}
               <span class="text-xs ml-1" title="心情">{talk.mood}</span>
             {/if}
             <span class="text-[10px] bg-[#fde68a] border-2 border-[#0284c7] px-1.5 py-0.5 shadow-[1px_1px_0px_0px_#0284c7] tracking-wider uppercase font-bold transform skew-x-12 ml-1">
-               逐光而上
+               与光同行
             </span>
          </div>
          <div class="flex items-center gap-2 mt-1 leading-none">
@@ -134,8 +185,12 @@
     <!-- Share footer -->
     <div class="mt-8 border-t-2 border-dashed border-[#0284c7]/20 pt-4 flex justify-between items-center pl-0 sm:pl-[64px]">
        <div class="flex gap-3">
-         <button class="flex items-center gap-1.5 px-3 py-1.5 border-2 border-[#0284c7] bg-white dark:bg-slate-700 text-[#0284c7] text-xs font-black shadow-[2px_2px_0px_0px_#0284c7] hover:bg-[#0284c7] hover:text-white transition-colors cursor-pointer rounded-sm transform active:translate-y-0.5 active:shadow-[0px_0px_0px_0px_#0284c7]">
-           🤍 LIKE
+         <button
+           on:click={handleLike}
+           disabled={liking}
+           class="flex items-center gap-1.5 px-3 py-1.5 border-2 border-[#0284c7] text-xs font-black shadow-[2px_2px_0px_0px_#0284c7] rounded-sm transform transition-all cursor-pointer {liked ? 'bg-[#fde68a] text-[#0284c7]' : 'bg-white dark:bg-slate-700 text-[#0284c7] hover:bg-[#0284c7] hover:text-white'} active:translate-y-0.5 active:shadow-[0px_0px_0px_0px_#0284c7]"
+         >
+           {liked ? '❤️ LIKED' : '🤍 LIKE'}{#if likeCount > 0} <span class="opacity-70">({likeCount})</span>{/if}
          </button>
        </div>
        <div class="text-[10px] uppercase font-mono font-bold text-slate-400 dark:text-slate-500 select-none">
