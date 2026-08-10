@@ -17,6 +17,26 @@ export function WalineComment() {
     };
     window.addEventListener('unhandledrejection', handleRejection);
 
+    // Intercept HTMLImageElement.prototype.src setter.
+    // Waline renders emoji reactions as <img> with the emoji char as `src` before the
+    // element is in the DOM, so MutationObserver is too late. We patch the property
+    // descriptor to catch the set call before the browser initiates the network request.
+    const imgSrcDesc = Object.getOwnPropertyDescriptor(HTMLImageElement.prototype, 'src')!;
+    const originalSrcSet = imgSrcDesc.set!;
+    Object.defineProperty(HTMLImageElement.prototype, 'src', {
+      get: imgSrcDesc.get,
+      set(value: string) {
+        // Replace emoji-as-src (any non-ASCII characters) with a blank GIF data URI
+        if (typeof value === 'string' && /[^\x00-\x7F]/.test(value)) {
+          originalSrcSet.call(this, 'data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7');
+          return;
+        }
+        originalSrcSet.call(this, value);
+      },
+      configurable: true,
+      enumerable: true,
+    });
+
     if (containerRef.current) {
       let p = window.location.pathname.replace(/\/+/g, '/');
       if (!p.endsWith('/')) p += '/';
@@ -26,11 +46,14 @@ export function WalineComment() {
         path: p,
         dark: 'html.dark',
         search: false,
+        reaction: ['❤️'],
         placeholder: '写几个字证明你来过~',
       });
     }
 
     return () => {
+      // Restore original setter
+      Object.defineProperty(HTMLImageElement.prototype, 'src', imgSrcDesc);
       walineInstanceConfig.current?.destroy();
       window.removeEventListener('unhandledrejection', handleRejection);
     };

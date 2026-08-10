@@ -1,10 +1,9 @@
 <script lang="ts">
-  import { onMount } from 'svelte';
+  import { onMount, onDestroy } from 'svelte';
   import type { TalkItem } from '../utils/postsFetcher';
   import SvelteLightbox from './SvelteLightbox.svelte';
   import TalkShareModal from './TalkShareModal.svelte';
   import PageViews from './PageViews.svelte';
-  import { siteConfig } from '../config/site';
 
   export let talk: TalkItem;
 
@@ -15,8 +14,8 @@
   let liked = false;
   let liking = false;
   let likeCount = 0;
-
-  const WALINE = siteConfig.waline.serverURL;
+  let pollTimer: ReturnType<typeof setInterval> | null = null;
+  let hideStyle: HTMLStyleElement | null = null;
 
   function getWalinePath(): string {
     let p = window.location.pathname.replace(/\/+/g, '/');
@@ -24,22 +23,26 @@
     return p;
   }
 
+  function readWalineReactionCount(): number {
+    const el = document.querySelector('.wl-reaction-count');
+    if (el) {
+      const n = parseInt((el as HTMLElement).textContent || '0', 10);
+      return isNaN(n) ? 0 : n;
+    }
+    return 0;
+  }
+
   async function handleLike() {
     if (liking) return;
     liking = true;
     try {
-      const wpath = getWalinePath();
-      const res = await fetch(`${WALINE}/api/reaction`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ url: wpath, reaction: '❤️' }),
-      });
-      if (res.ok) {
-        liked = !liked;
-        const data = await res.json();
-        if (typeof data.data?.reaction === 'number') {
-          likeCount = data.data.reaction;
-        }
+      const btn = document.querySelector('.wl-reaction-item');
+      if (btn) {
+        (btn as HTMLElement).click();
+        liked = true;
+        try { sessionStorage.setItem(`waline_liked_${getWalinePath()}`, '1'); } catch {}
+        await new Promise(r => setTimeout(r, 600));
+        likeCount = readWalineReactionCount();
       }
     } catch {
       // ignore
@@ -48,19 +51,36 @@
     }
   }
 
-  onMount(async () => {
+  onMount(() => {
+    // Hide Waline's built-in reaction widget — our custom button replaces it
+    hideStyle = document.createElement('style');
+    hideStyle.textContent = '.wl-reaction { display: none !important; }';
+    document.head.appendChild(hideStyle);
+
+    // Restore liked state
     try {
-      const wpath = getWalinePath();
-      const res = await fetch(`${WALINE}/api/reaction?url=${encodeURIComponent(wpath)}&reaction=${encodeURIComponent('❤️')}`);
-      if (res.ok) {
-        const data = await res.json();
-        if (typeof data.data?.reaction === 'number') {
-          likeCount = data.data.reaction;
-        }
+      liked = sessionStorage.getItem(`waline_liked_${getWalinePath()}`) === '1';
+    } catch {}
+
+    // Poll for Waline reaction count to appear
+    let attempts = 0;
+    pollTimer = setInterval(() => {
+      const c = readWalineReactionCount();
+      if (c > 0) {
+        likeCount = c;
+        if (pollTimer) { clearInterval(pollTimer); pollTimer = null; }
       }
-    } catch {
-      // ignore
-    }
+      attempts++;
+      if (attempts > 40 && pollTimer) { // ~20s timeout
+        clearInterval(pollTimer);
+        pollTimer = null;
+      }
+    }, 500);
+  });
+
+  onDestroy(() => {
+    if (pollTimer) clearInterval(pollTimer);
+    if (hideStyle && hideStyle.parentNode) hideStyle.parentNode.removeChild(hideStyle);
   });
   function openShare() {
     showShare = true;
