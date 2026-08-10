@@ -29,7 +29,7 @@ export const siteConfig = {
     bilibiliMid: "589691048",
     /** AuthorCard 上显示的 Bilibili 文字 */
     bilibiliDisplayName: "Saimen",
-    email: "Saimen@outlook.com",
+    email: "yzg011@qq.com",
     website: "https://tblog.z2m.store",
     /** 关于页额外社交链接 */
     twitter: "https://x.com/IMSaimen",
@@ -37,7 +37,7 @@ export const siteConfig = {
     wechat: "@imljxu",
     qq: "357239268",
     /** QQ群链接（欢迎提示中使用） */
-    qqGroup: "https://qun.qq.com/universal-share/share?ac=1&authKey=NZ9BP%2BPT44nu34JWAL4Jdz25Bq7ueQoOfOqA4iYPT1JvQKYktml43kgBTMfqTkNl&busi_data=eyJncm91cENvZGUiOiIxMTAzMjMyNDIyIiwidG9rZW4iOiJTZDh2RmhWbXFTL3ZHbVBXeXhJZndQTVcrOUlhNXRSNlczVG1GNUIzQnlQejFZSThWYStSSEVEWUtDcHdHSTM3IiwidWluIjoiMzY5Nzc3MzQxNiJ9&data=HZcezojmJTU_U4qRqv_3ODAb7vm86b6wP8YEp9Stz5b4EzngKNFllXJneyVO7qr4u-plsM84FyvpZl6kkuyZgg&svctype=4&tempid=h5_group_info",
+    qqGroup: "https://qm.qq.com/q/1KPCsbvP1y",
     /** 订阅链接（欢迎提示中的"订阅"按钮，指向 GitHub Issues 等） */
     subscribe: "https://github.com/yzg011/xuhome/issues",
   },
@@ -299,17 +299,17 @@ export const aboutConfig = {
   /** GitHub 仓库链接（关于页"找到我"区块） */
   githubLink: "https://github.com/yzg011",
   /** GitHub 显示文字 */
-  githubValue: "@ImSaimen\nSaimen",
+  githubValue: "yzg011",
   /** 邮箱显示文字 */
   emailValue: "ME@Saimen.COM",
   /** 邮箱链接 */
   emailLink: "mailto:ME@Saimen.COM",
   /** 微信显示文字 */
-  wechatValue: "@imljxu",
+  wechatValue: "扫上方二维码",
   /** QQ 显示文字 */
-  qqValue: "3697773416",
+  qqValue: "357239268",
   /** GitHub Socials 区块的邮箱链接 */
-  socialEmailLink: "mailto:me@Saimen.com",
+  socialEmailLink: "mailto:yzg011@qq.com",
 };
 
 /**
