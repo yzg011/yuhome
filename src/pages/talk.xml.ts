@@ -1,6 +1,6 @@
 import rss from '@astrojs/rss';
-import { getCollection } from 'astro:content';
 import { siteConfig } from '../config/site';
+import { fetchAllMemos } from '../utils/memos';
 import MarkdownIt from 'markdown-it';
 import sanitizeHtml from 'sanitize-html';
 import type { APIContext } from 'astro';
@@ -15,30 +15,21 @@ function stripInvalidXmlChars(str: string): string {
 }
 
 export async function GET(context: APIContext) {
-  const talks = await getCollection('talks');
+  const talks = await fetchAllMemos();
 
   const siteUrl = (context.site ?? new URL(siteConfig.url)).toString().replace(/\/$/, '');
   const author = siteConfig.author;
 
   const items = talks
     .map((talk) => {
-      const body = typeof talk.body === 'string' ? talk.body : '';
-      const cleaned = stripInvalidXmlChars(body);
-      const slug = (talk.data.slug || talk.slug || talk.id || '').trim();
-      const permalink = `${siteUrl}/talk/${slug}/`;
+      const body = stripInvalidXmlChars(talk.content);
       return {
-        title: talk.data.title,
-        pubDate: talk.data.date,
-        description: body
-          .replace(/!\[.*?\]\(.*?\)/g, '')
-          .replace(/\[([^\]]*)\]\([^)]*\)/g, '$1')
-          .replace(/[#*`_~>|\-]/g, '')
-          .replace(/\s+/g, ' ')
-          .trim()
-          .slice(0, 150) || '',
-        link: permalink,
-        guid: permalink,
-        content: sanitizeHtml(parser.render(cleaned), {
+        title: talk.title,
+        pubDate: talk.pubDate,
+        description: talk.description,
+        link: talk.url,
+        guid: talk.url,
+        content: sanitizeHtml(parser.render(body), {
           allowedTags: sanitizeHtml.defaults.allowedTags.concat(['img']),
         }),
         customData: `<dc:creator><![CDATA[${author}]]></dc:creator>`,

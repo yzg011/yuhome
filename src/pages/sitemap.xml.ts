@@ -1,4 +1,5 @@
 import { getCollection } from 'astro:content';
+import { fetchAllMemos } from '../utils/memos';
 
 function escapeXml(unsafe: string): string {
   return unsafe.replace(/[<>&'"]/g, (c) => {
@@ -15,7 +16,7 @@ function escapeXml(unsafe: string): string {
 
 export async function GET(context: any) {
   const rawPosts = await getCollection('posts');
-  const rawTalks = await getCollection('talks');
+  const memos = await fetchAllMemos();
   
   // Normalize domain of the site (remove trailing slash)
   const siteUrl = context.site ? context.site.toString() : 'https://tblog.z2m.store';
@@ -47,20 +48,15 @@ export async function GET(context: any) {
     });
   });
 
-  rawTalks.forEach((talk: any) => {
-    const data = talk.data;
-    let customSlug = talk.slug || talk.id;
-    if (data.slug && typeof data.slug === 'string' && data.slug.trim() !== '') {
-      customSlug = data.slug.trim();
-    }
-    const lastmod = data.date || null;
+  // 说说没有独立详情页（数据来自 Memos API），统一指向列表页
+  if (memos.length > 0) {
     urls.push({
-      loc: `${domain}/talk/${customSlug}`,
-      priority: '0.6',
-      changefreq: 'weekly',
-      lastmod
+      loc: `${domain}/talks`,
+      priority: '0.7',
+      changefreq: 'daily',
+      lastmod: memos[0].date,
     });
-  });
+  }
 
   const sitemap = `<?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">

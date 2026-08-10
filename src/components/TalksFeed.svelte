@@ -243,6 +243,10 @@
     isLightboxOpen = true;
   }
 
+  function goToTalk(talk: TalkItem) {
+    window.location.href = `/talk/${talk.slug}`;
+  }
+
   // Fold long talk content
   function setupTalkFold() {
     document.querySelectorAll('.talk-content').forEach(el => {
@@ -272,7 +276,8 @@
       overlay.appendChild(btn);
       el.appendChild(overlay);
 
-      btn.addEventListener('click', function expand() {
+      btn.addEventListener('click', function expand(e) {
+        e.stopPropagation();
         el.style.maxHeight = `${contentHeight + 50}px`;
         overlay.classList.add('opacity-0');
         setTimeout(() => {
@@ -283,7 +288,8 @@
           collapseBtn.innerHTML = '收起 <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="m18 15-6-6-6 6"/></svg>';
           collapseWrap.appendChild(collapseBtn);
           el.after(collapseWrap);
-          collapseBtn.addEventListener('click', () => {
+          collapseBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
             el.style.maxHeight = `${threshold}px`;
             overlay.classList.remove('opacity-0');
             collapseWrap.remove();
@@ -373,7 +379,8 @@
       
       <div 
         id={`talk-${talk.id}`}
-        class="bg-white dark:bg-slate-800 border-4 border-[#0284c7] p-5 md:p-6 shadow-[8px_8px_0px_0px_#0284c7] hover:shadow-[10px_10px_0px_0px_#f59e0b] hover:-translate-y-1 transition-all rounded-sm relative group animate-card-entrance opacity-0"
+        on:click={() => goToTalk(talk)}
+        class="bg-white dark:bg-slate-800 border-4 border-[#0284c7] p-5 md:p-6 shadow-[8px_8px_0px_0px_#0284c7] hover:shadow-[10px_10px_0px_0px_#f59e0b] hover:-translate-y-1 transition-all rounded-sm relative group animate-card-entrance opacity-0 cursor-pointer"
         style="animation-delay: {0.2 + (i % 12) * 0.05}s"
       >
         <!-- Share Button -->

@@ -1,4 +1,5 @@
 import { getCollection } from 'astro:content';
+import { fetchTalkItems } from './memos';
 
 export interface PostItem {
   id: string;
@@ -105,63 +106,20 @@ export async function getProcessedPosts(): Promise<PostItem[]> {
 }
 
 export async function getProcessedTalks(): Promise<TalkItem[]> {
-  const rawTalks = await getCollection('talks');
+  const memoTalks = await fetchTalkItems();
 
-  const processed = rawTalks.map((talk: any) => {
-    const data = talk.data;
-    let tags = [];
-    if (Array.isArray(data.tags)) {
-      tags = data.tags;
-    } else if (typeof data.tags === 'string') {
-      tags = data.tags.split(',').map((t: string) => t.trim());
-    }
-    
-    let parsedDate = '未知时间';
-    if (data.date) {
-      const d = new Date(data.date);
-      if (!isNaN(d.getTime())) {
-        const year = d.getFullYear();
-        const month = String(d.getMonth() + 1).padStart(2, '0');
-        const day = String(d.getDate()).padStart(2, '0');
-        const hours = String(d.getHours()).padStart(2, '0');
-        const minutes = String(d.getMinutes()).padStart(2, '0');
-        const seconds = String(d.getSeconds()).padStart(2, '0');
-        parsedDate = `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`;
-      }
-    }
-
-    let customSlug = talk.slug || talk.id;
-    if (data.slug && typeof data.slug === 'string' && data.slug.trim() !== '') {
-      customSlug = data.slug.trim();
-    }
-
-    // Normalize pre-encoded slugs from frontmatter
-    if (customSlug.includes('%')) {
-      try {
-        customSlug = decodeURIComponent(customSlug);
-      } catch (e) {
-        // Fallback
-      }
-    }
-
+  return memoTalks.map((talk) => {
     return {
-      id: talk.id || customSlug,
-      slug: customSlug,
-      title: data.title || '日常动态',
-      date: parsedDate,
-      content: talk.body || '',
-      tags,
-      location: data.location || '',
-      weather: data.weather || '',
-      mood: data.mood || '',
-      device: data.device || ''
+      id: talk.id,
+      slug: talk.slug,
+      title: talk.title || '日常动态',
+      date: talk.date,
+      content: talk.content || '',
+      tags: talk.tags || [],
+      location: talk.location || '',
+      weather: talk.weather || '',
+      mood: talk.mood || '',
+      device: talk.device || '',
     };
-  });
-
-  // Sort descending by date
-  return processed.sort((a, b) => {
-    if (a.date === '未知时间') return 1;
-    if (b.date === '未知时间') return -1;
-    return b.date.localeCompare(a.date);
   });
 }

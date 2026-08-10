@@ -26,7 +26,6 @@ export function WalineComment() {
         path: p,
         dark: 'html.dark',
         search: false,
-        imageUploader: false,
         placeholder: '写几个字证明你来过~',
       });
     }

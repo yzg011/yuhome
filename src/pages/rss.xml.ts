@@ -1,5 +1,6 @@
 import { getCollection } from 'astro:content';
 import { siteConfig } from '../config/site';
+import { fetchAllMemos } from '../utils/memos';
 import MarkdownIt from 'markdown-it';
 import sanitizeHtml from 'sanitize-html';
 import type { APIContext } from 'astro';
@@ -54,7 +55,7 @@ function renderItem(title: string, url: string, desc: string, pubDate: string, c
 export async function GET(context: APIContext) {
   const [posts, talks] = await Promise.all([
     getCollection('posts'),
-    getCollection('talks'),
+    fetchAllMemos(),
   ]);
 
   const siteUrl = (context.site ?? new URL(siteConfig.url)).toString().replace(/\/$/, '');
@@ -78,19 +79,17 @@ export async function GET(context: APIContext) {
       };
     }),
     ...talks.map((talk) => {
-      const body = typeof talk.body === 'string' ? talk.body : '';
-      const cleaned = stripInvalidXmlChars(body);
-      const slug = (talk.data.slug || talk.slug || talk.id || '').trim();
-      const url = `${siteUrl}/talk/${slug}/`;
-      const pubDate = beijingRfc2822(talk.data.date);
-      const desc = body.substring(0, 200).replace(/[#*`_\[\]()\-]/g, '').trim() || '';
-      const content = sanitizeHtml(parser.render(cleaned), {
+      const body = stripInvalidXmlChars(talk.content);
+      const desc = talk.description || '';
+      const url = talk.url;
+      const pubDate = talk.pubDate;
+      const content = sanitizeHtml(parser.render(body), {
         allowedTags: sanitizeHtml.defaults.allowedTags.concat(['img']),
       });
       return {
         pubDate,
         sortTime: new Date(pubDate).getTime(),
-        html: renderItem(`「说说」${talk.data.title}`, url, desc, pubDate, content, author),
+        html: renderItem(`「说说」${talk.title}`, url, desc, pubDate, content, author),
       };
     }),
   ]

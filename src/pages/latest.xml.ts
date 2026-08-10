@@ -1,6 +1,7 @@
 import rss from '@astrojs/rss';
 import { getCollection } from 'astro:content';
 import { siteConfig } from '../config/site';
+import { fetchAllMemos } from '../utils/memos';
 import MarkdownIt from 'markdown-it';
 import sanitizeHtml from 'sanitize-html';
 import type { APIContext } from 'astro';
@@ -25,7 +26,7 @@ function stripMarkdown(md: string): string {
 export async function GET(context: APIContext) {
   const [posts, talks] = await Promise.all([
     getCollection('posts'),
-    getCollection('talks'),
+    fetchAllMemos(),
   ]);
 
   const siteUrl = (context.site ?? new URL(siteConfig.url)).toString().replace(/\/$/, '');
@@ -51,17 +52,14 @@ export async function GET(context: APIContext) {
       };
     }),
     ...talks.map((talk) => {
-      const body = typeof talk.body === 'string' ? talk.body : '';
-      const cleaned = stripInvalidXmlChars(body);
-      const slug = (talk.data.slug || talk.slug || talk.id || '').trim();
-      const permalink = `${siteUrl}/talk/${slug}/`;
+      const body = stripInvalidXmlChars(talk.content);
       return {
-        title: `「说说」${talk.data.title}`,
-        pubDate: talk.data.date,
-        description: body.substring(0, 200).replace(/[#*`_\[\]()\-]/g, '').trim() || '',
-        link: permalink,
-        guid: permalink,
-        content: sanitizeHtml(parser.render(cleaned), {
+        title: `「说说」${talk.title}`,
+        pubDate: talk.pubDate,
+        description: talk.description,
+        link: talk.url,
+        guid: talk.url,
+        content: sanitizeHtml(parser.render(body), {
           allowedTags: sanitizeHtml.defaults.allowedTags.concat(['img']),
         }),
         customData: `<dc:creator><![CDATA[${author}]]></dc:creator>`,
