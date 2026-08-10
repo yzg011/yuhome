@@ -6,18 +6,14 @@ import type { APIContext } from 'astro';
 
 const parser = new MarkdownIt();
 
-// 清除XML非法字符
 function stripInvalidXmlChars(str: string): string {
-  if (!str) return '';
   return str.replace(
     /[\x00-\x08\x0B\x0C\x0E-\x1F\x7F-\x9F\uFDD0-\uFDEF\uFFFE\uFFFF]/g,
     '',
   );
 }
 
-// 去除Markdown标记，清理多余换行空格
 function stripMarkdown(md: string): string {
-  if (!md) return '';
   return md
     .replace(/[#*`_\[\]()\->|~]/g, '')
     .replace(/\n+/g, ' ')
@@ -25,43 +21,28 @@ function stripMarkdown(md: string): string {
     .trim();
 }
 
-// 北京时间转标准RFC2822 GMT时间
 function beijingRfc2822(value: unknown): string {
   if (!value) return new Date().toUTCString();
-  const d = value instanceof Date ? value : new Date(String(value));
+  const d = value instanceof Date ? value : new Date(value as string | number);
   if (isNaN(d.getTime())) return new Date().toUTCString();
-  // 北京时间UTC+8，减去8小时转为标准UTC时间
+  // Frontmatter dates are Beijing Time (UTC+8) but parsed by js-yaml as UTC.
+  // Subtract 8h to get correct UTC moment, then format as GMT.
   const utc = new Date(d.getTime() - 8 * 60 * 60 * 1000);
   const days = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
   const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
   return `${days[utc.getUTCDay()]}, ${String(utc.getUTCDate()).padStart(2, '0')} ${months[utc.getUTCMonth()]} ${utc.getUTCFullYear()} ${String(utc.getUTCHours()).padStart(2, '0')}:${String(utc.getUTCMinutes()).padStart(2, '0')}:${String(utc.getUTCSeconds()).padStart(2, '0')} GMT`;
 }
 
-// XML特殊字符转义
 function escapeXml(s: string): string {
-  if (!s) return '';
-  return s
-    .replace(/&/g, '&amp;')
-    .replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;')
-    .replace(/"/g, '&quot;')
-    .replace(/'/g, '&apos;');
+  return s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&apos;');
 }
 
-// 生成单条RSS Item模板
-function renderItem(
-  title: string,
-  url: string,
-  desc: string,
-  pubDate: string,
-  content: string,
-  author: string
-): string {
+function renderItem(title: string, url: string, desc: string, pubDate: string, content: string, author: string): string {
   return [
     '  <item>',
     `    <title>${escapeXml(title)}</title>`,
     `    <link>${escapeXml(url)}</link>`,
-    `    <guid isPermaLink="true">${escapeXml(url)}</guid>`,
+    `    <guid>${escapeXml(url)}</guid>`,
     `    <description>${escapeXml(desc)}</description>`,
     `    <pubDate>${pubDate}</pubDate>`,
     `    <dc:creator><![CDATA[${author}]]></dc:creator>`,
@@ -76,68 +57,49 @@ export async function GET(context: APIContext) {
     getCollection('talks'),
   ]);
 
-  // 站点地址，自动去除末尾斜杠，防止双斜杠
-  const siteUrl = (context.site ?? new URL(siteConfig.url))
-    .toString()
-    .replace(/\/+$/, '');
+  const siteUrl = (context.site ?? new URL(siteConfig.url)).toString().replace(/\/$/, '');
   const author = siteConfig.author;
 
-  // ========== 文章处理：强制优先文件名，匹配 /blog/xxx 路由 ==========
-  const postItems = posts.map((post) => {
-    const body = typeof post.body === 'string' ? post.body : '';
-    const cleaned = stripInvalidXmlChars(body);
-
-    // 从文件id提取纯文件名（核心兜底，永远有值）
-    const fullFileName = post.id.split('/').pop() || '';
-    const fileSlug = fullFileName.replace(/\.md$/i, '');
-    // 优先级：frontmatter slug > Astro内置slug > 文件名称
-    const finalSlug = post.data.slug?.trim() || post.slug?.trim() || fileSlug;
-
-    // 匹配你的站点路由 /blog/xxx
-    const url = `${siteUrl}/blog/${finalSlug}/`;
-    const pubDate = beijingRfc2822(post.data.published || post.data.date);
-    const summary = post.data.description || stripMarkdown(body).substring(0, 150);
-    const htmlContent = sanitizeHtml(parser.render(cleaned), {
-      allowedTags: sanitizeHtml.defaults.allowedTags.concat(['img']),
-    });
-
-    return {
-      sortTime: new Date(pubDate).getTime() || 0,
-      html: renderItem(post.data.title, url, summary, pubDate, htmlContent, author),
-    };
-  });
-
-  // ========== 说说处理：同样使用文件名兜底 ==========
-  const talkItems = talks.map((talk) => {
-    const body = typeof talk.body === 'string' ? talk.body : '';
-    const cleaned = stripInvalidXmlChars(body);
-
-    const fullFileName = talk.id.split('/').pop() || '';
-    const fileSlug = fullFileName.replace(/\.md$/i, '');
-    const finalSlug = talk.data.slug?.trim() || talk.slug?.trim() || fileSlug;
-
-    const url = `${siteUrl}/talk/${finalSlug}/`;
-    const pubDate = beijingRfc2822(talk.data.date);
-    const summary = stripMarkdown(body).substring(0, 200);
-    const htmlContent = sanitizeHtml(parser.render(cleaned), {
-      allowedTags: sanitizeHtml.defaults.allowedTags.concat(['img']),
-    });
-
-    return {
-      sortTime: new Date(pubDate).getTime() || 0,
-      html: renderItem(`「说说」${talk.data.title}`, url, summary, pubDate, htmlContent, author),
-    };
-  });
-
-  // 合并 + 按发布时间倒序
-  const allItems = [...postItems, ...talkItems]
+  const items = [
+    ...posts.map((post) => {
+      const body = typeof post.body === 'string' ? post.body : '';
+      const cleaned = stripInvalidXmlChars(body);
+      const slug = (post.data.slug || post.slug || post.id || '').trim();
+      const desc = post.data.description || stripMarkdown(body).substring(0, 50);
+      const url = `${siteUrl}/posts/${slug}/`;
+      const pubDate = beijingRfc2822(post.data.published || post.data.date);
+      const content = sanitizeHtml(parser.render(cleaned), {
+        allowedTags: sanitizeHtml.defaults.allowedTags.concat(['img']),
+      });
+      return {
+        pubDate,
+        sortTime: new Date(pubDate).getTime(),
+        html: renderItem(post.data.title, url, desc, pubDate, content, author),
+      };
+    }),
+    ...talks.map((talk) => {
+      const body = typeof talk.body === 'string' ? talk.body : '';
+      const cleaned = stripInvalidXmlChars(body);
+      const slug = (talk.data.slug || talk.slug || talk.id || '').trim();
+      const url = `${siteUrl}/talk/${slug}/`;
+      const pubDate = beijingRfc2822(talk.data.date);
+      const desc = body.substring(0, 200).replace(/[#*`_\[\]()\-]/g, '').trim() || '';
+      const content = sanitizeHtml(parser.render(cleaned), {
+        allowedTags: sanitizeHtml.defaults.allowedTags.concat(['img']),
+      });
+      return {
+        pubDate,
+        sortTime: new Date(pubDate).getTime(),
+        html: renderItem(`「说说」${talk.data.title}`, url, desc, pubDate, content, author),
+      };
+    }),
+  ]
     .sort((a, b) => b.sortTime - a.sortTime)
-    .map((i) => i.html)
+    .map((item) => item.html)
     .join('\n');
 
-  // 最终RSS结构
   const now = new Date();
-  const rssFeed = [
+  const rss = [
     '<?xml version="1.0" encoding="UTF-8"?>',
     '<rss version="2.0"',
     '  xmlns:atom="http://www.w3.org/2005/Atom"',
@@ -151,15 +113,12 @@ export async function GET(context: APIContext) {
     `    <language>zh-CN</language>`,
     `    <lastBuildDate>${now.toUTCString()}</lastBuildDate>`,
     `    <atom:link href="${escapeXml(siteUrl)}/rss.xml" rel="self" type="application/rss+xml"/>`,
-    allItems,
+    items,
     '  </channel>',
     '</rss>',
   ].join('\n');
 
-  return new Response(rssFeed, {
-    headers: {
-      'Content-Type': 'application/xml; charset=utf-8',
-      'Cache-Control': 'public, max-age=3600',
-    },
+  return new Response(rss, {
+    headers: { 'Content-Type': 'application/xml; charset=utf-8' },
   });
 }
