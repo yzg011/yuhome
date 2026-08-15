@@ -1,3 +1,5 @@
+
+import { unified } from '@astrojs/markdown-remark';
 import { defineConfig } from 'astro/config';
 import react from '@astrojs/react';
 import svelte from '@astrojs/svelte';
@@ -25,10 +27,11 @@ export default defineConfig({
       status: 301
     }
   },
-  markdown: {
-    remarkPlugins: [remarkGfm, remarkMath, remarkAdmonitions, remarkGithubCard],
-    rehypePlugins: [rehypeKatex, rehypeShiftHeadings],
-  },
+// 然后在 defineConfig 里面
+markdown: unified({
+  remarkPlugins: [remarkGfm, remarkMath, remarkAdmonitions, remarkGithubCard],
+  rehypePlugins: [rehypeKatex, rehypeShiftHeadings],
+}),
   vite: {
     plugins: [tailwindcss()],
     define: {
