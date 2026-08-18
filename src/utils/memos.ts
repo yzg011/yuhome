@@ -81,6 +81,18 @@ function extractTags(content: string): string[] {
 }
 
 /**
+ * 提取 Memos 的唯一 ID（uid 优先，其次从 name 字段解析，最后回退数字 id）
+ * 详情页、RSS、sitemap 必须共用此逻辑，保证 URL 一致
+ */
+function extractMemoId(memo: any): string {
+  return (
+    memo.uid ||
+    (memo.name ? String(memo.name).split('/').pop() : '') ||
+    String(memo.id || '')
+  );
+}
+
+/**
  * 内部函数：分页拉取所有原始 Memos 数据
  */
 async function fetchRawMemos(pageSize = 50): Promise<any[]> {
@@ -134,7 +146,7 @@ export async function fetchAllMemos(pageSize = 50): Promise<MemoRssItem[]> {
     const rawContent = memo.content || '';
     const imageMd = buildImageMarkdown(memo.attachments);
     const fullContent = rawContent + imageMd;
-    const id = memo.uid || String(memo.id || '');
+    const id = extractMemoId(memo);
 
     return {
       id,
@@ -158,7 +170,7 @@ export async function fetchTalkItems(pageSize = 50): Promise<MemoTalkItem[]> {
     const rawContent = memo.content || '';
     const imageMd = buildImageMarkdown(memo.attachments);
     const fullContent = rawContent + imageMd;
-    const id = memo.uid || (memo.name ? memo.name.split('/').pop() : '') || String(memo.id || '');
+    const id = extractMemoId(memo);
 
     return {
       id,
