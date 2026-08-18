@@ -48,7 +48,7 @@ export async function GET(context: any) {
     });
   });
 
-  // 说说没有独立详情页（数据来自 Memos API），统一指向列表页
+  // 说说列表页
   if (memos.length > 0) {
     urls.push({
       loc: `${domain}/talks`,
@@ -57,6 +57,16 @@ export async function GET(context: any) {
       lastmod: memos[0].date,
     });
   }
+
+  // 说说独立详情页
+  memos.forEach((memo) => {
+    urls.push({
+      loc: `${domain}/talk/${memo.id}`,
+      priority: '0.6',
+      changefreq: 'weekly',
+      lastmod: memo.date,
+    });
+  });
 
   const sitemap = `<?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
