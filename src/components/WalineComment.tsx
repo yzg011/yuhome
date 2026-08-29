@@ -42,12 +42,12 @@ export function WalineComment() {
         search: false,
         reactionTitle: '你认为这篇文章怎么样？',
         reaction: [
-          'https://cdn.jsdelivr.net/npm/@waline/emojis@1.1.0/weibo/weibo_angry.png',
-          'https://cdn.jsdelivr.net/npm/@waline/emojis@1.1.0/weibo/weibo_despise.png',
-          'https://cdn.jsdelivr.net/npm/@waline/emojis@1.1.0/weibo/weibo_cool.png',
-          'https://cdn.jsdelivr.net/npm/@waline/emojis@1.1.0/weibo/weibo_doubt.png',
-          'https://cdn.jsdelivr.net/npm/@waline/emojis@1.1.0/weibo/weibo_grin.png',
-          'https://cdn.jsdelivr.net/npm/@waline/emojis@1.1.0/weibo/weibo_sleepy.png',
+          'https://img.z2m.store/file/emoji/1787983636787_tieba_look_down.png',
+          'https://img.z2m.store/file/emoji/1787983635626_tieba_awkward.png',
+          'https://img.z2m.store/file/emoji/1787983633078_tieba_agree.png',
+          'https://img.z2m.store/file/emoji/1787983637686_weibo_lovely.png',
+          'https://img.z2m.store/file/emoji/1787983632020_tieba_sunglasses.png',
+          'https://img.z2m.store/file/emoji/1787983635923_tieba_sleep.png',
         ],
         placeholder: '写几个字证明你来过~',
       });
