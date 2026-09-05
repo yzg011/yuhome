@@ -10,6 +10,34 @@
   });
 </script>
 
+
+
+<script
+  data-host-id="1"
+  data-auto-reg="true"
+  data-login-token=""
+  data-close-width="52"
+  data-close-height="52"
+  data-open-width="380"
+  data-open-height="680"
+  data-position="right"
+  data-welcome="欢迎来到小鱼钓猫🐱的博客"
+  data-theme-color="#1fe1f9"
+  data-logo="https://img.z2m.store/file/public/1778862620159_g.png"
+  data-popup-title="需要帮助吗？"
+  data-popup-subtitle="我们随时为您服务！"
+  data-popup-image="https://img.z2m.store/file/public/1778862620159_g.png"
+  data-popup-closable="true"
+  src="https://lt.z2m.store/widget.js"
+  async
+></script>
+
+
+
+
+
+
+
 {#if loading}
   <span class="inline-flex items-center gap-1 text-xs sm:text-sm font-extrabold text-slate-500 dark:text-slate-400 shrink-0">
     <svg class="w-3 h-3 sm:w-3.5 sm:h-3.5 animate-spin" fill="none" viewBox="0 0 24 24">
