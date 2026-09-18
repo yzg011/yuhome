@@ -531,8 +531,10 @@ const canonicalURL = new URL(Astro.url.pathname, siteConfig.url).href;
 
 <!-- TG聊天挂件隔离容器 -->
 <script is:inline
+  data-file-api-base="https://ttg.z2m.store/sendDocument"    
   data-tg-bot-url="https://ttg.z2m.store/sendMessage"
   data-tg-get-url="https://ttg.z2m.store/getUpdates"
+  data-get-file-url="https://ttg.z2m.store/getFile"
   data-chat-id="8838248851"
   data-theme-color="#22d3ee"
   data-open-width="360"
